@@ -85,8 +85,12 @@ class OverviewScreen extends ConsumerWidget {
               final parts = d.split('-');
               final label = '${parts[2]}/${parts[1]}';
               return DataColumn(
-                label: Text(label, style: const TextStyle(fontSize: 11)),
-                columnWidth: const FixedColumnWidth(32),
+                headingRowAlignment: MainAxisAlignment.center,
+                label: Text(
+                  label,
+                  style: const TextStyle(fontSize: 10),
+                ),
+                columnWidth: const FixedColumnWidth(44),
               );
             }),
           ],
@@ -101,8 +105,8 @@ class OverviewScreen extends ConsumerWidget {
                 ...data.dates.map((d) {
                   final present = studentData[d] == 1;
                   return DataCell(
-                    SizedBox(
-                      width: double.infinity,
+                    Align(
+                      alignment: Alignment.center,
                       child: Icon(
                         present ? Icons.check_circle : Icons.cancel,
                         size: 18,
