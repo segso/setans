@@ -4,10 +4,9 @@ import 'theme/app_theme.dart';
 import 'shared/widgets/app_menubar.dart';
 import 'features/calendar/presentation/screens/calendar_screen.dart';
 import 'features/register/presentation/screens/register_screen.dart';
-import 'features/register/presentation/providers/register_providers.dart';
+import 'shared/providers/shared_providers.dart';
 import 'features/assistance/presentation/screens/day_assistance_screen.dart';
 import 'features/student_detail/presentation/screens/student_detail_screen.dart';
-import 'features/student_detail/presentation/providers/student_detail_providers.dart';
 import 'features/overview/presentation/screens/overview_screen.dart';
 import 'features/tutorial/presentation/widgets/tutorial_manager.dart';
 import 'features/about/presentation/widgets/about_dialog.dart';
@@ -53,7 +52,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   }
 
   void _onBackToCalendar() {
-    ref.invalidate(filteredStudentsProvider);
+    ref.read(mutationProvider.notifier).bump();
     setState(() => _selectedDate = null);
   }
 
@@ -62,9 +61,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   }
 
   void _onBackFromStudent() {
-    ref.invalidate(filteredStudentsProvider);
-    ref.invalidate(studentProvider(_selectedStudentId!));
-    ref.invalidate(studentAssistancesProvider(_selectedStudentId!));
+    ref.read(mutationProvider.notifier).bump();
     setState(() => _selectedStudentId = null);
   }
 
@@ -134,7 +131,10 @@ class _SetansAppState extends ConsumerState<SetansApp> {
             ),
           ),
           Expanded(
-            child: DayAssistanceScreen(date: _selectedDate!),
+            child: DayAssistanceScreen(
+                  date: _selectedDate!,
+                  onStudentTap: _onStudentTap,
+                ),
           ),
         ],
       );
@@ -146,7 +146,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
       case MenuItem.register:
         return RegisterScreen(onStudentTap: _onStudentTap);
       case MenuItem.overview:
-        return const OverviewScreen();
+        return OverviewScreen(onStudentTap: _onStudentTap);
       case MenuItem.tutorial:
       case MenuItem.about:
         return CalendarScreen(onDaySelected: _onDaySelected);
