@@ -77,3 +77,29 @@ final overviewDataProvider = FutureProvider<OverviewData>((ref) async {
 
   return OverviewData(students: students, dates: dates, data: data);
 });
+
+final overviewSearchProvider = NotifierProvider<OverviewSearchNotifier, String>(
+  OverviewSearchNotifier.new,
+);
+
+class OverviewSearchNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void update(String value) => state = value;
+}
+
+final filteredOverviewDataProvider = FutureProvider<OverviewData>((ref) async {
+  ref.watch(mutationProvider);
+  final data = await ref.watch(overviewDataProvider.future);
+  final query = ref.watch(overviewSearchProvider);
+  if (query.isEmpty) return data;
+  final dao = ref.watch(studentsDaoProvider);
+  final filtered = await dao.search(query);
+  final filteredIds = filtered.map((s) => s.id).toSet();
+  return OverviewData(
+    students: data.students.where((s) => filteredIds.contains(s.id)).toList(),
+    dates: data.dates,
+    data: data.data,
+  );
+});
