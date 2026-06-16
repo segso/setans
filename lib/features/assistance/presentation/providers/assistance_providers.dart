@@ -13,10 +13,12 @@ final assistanceSearchProvider =
     NotifierProvider<AssistanceSearchNotifier, String>(
         AssistanceSearchNotifier.new);
 
-final dayStudentsProvider =
-    FutureProvider.family<List<Student>, DateTime>((ref, date) {
+final filteredDayStudentsProvider = FutureProvider<List<Student>>((ref) async {
   ref.watch(mutationProvider);
-  return ref.watch(studentsDaoProvider).getAll();
+  final dao = ref.watch(studentsDaoProvider);
+  final query = ref.watch(assistanceSearchProvider);
+  if (query.isEmpty) return dao.getAll();
+  return dao.search(query);
 });
 
 final dayAssistanceProvider =
