@@ -80,6 +80,39 @@ class _SetansAppState extends ConsumerState<SetansApp> {
     });
   }
 
+  Future<void> _deleteDay(BuildContext context, DateTime date) async {
+    final dateStr =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar día'),
+        content: Text(
+          '¿Eliminar todos los registros de asistencia del '
+          '${date.day}/${date.month}/${date.year}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      final dao = ref.read(assistancesDaoProvider);
+      await dao.deleteByDate(dateStr);
+      ref.read(mutationProvider.notifier).bump();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -144,6 +177,14 @@ class _SetansAppState extends ConsumerState<SetansApp> {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
+                ),
+                const SizedBox(width: 8),
+                Builder(
+                  builder: (innerContext) => IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: 'Eliminar día',
+                    onPressed: () => _deleteDay(innerContext, _selectedDate!),
+                  ),
                 ),
                 const Spacer(),
               ],
