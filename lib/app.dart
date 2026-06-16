@@ -99,7 +99,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: SetansTheme.absent,
             ),
             child: const Text('Eliminar'),
           ),
@@ -181,7 +181,8 @@ class _SetansAppState extends ConsumerState<SetansApp> {
                 const SizedBox(width: 8),
                 Builder(
                   builder: (innerContext) => IconButton(
-                    icon: const Icon(Icons.delete_outline),
+                    icon: Icon(Icons.delete_outline,
+                        color: SetansTheme.absent),
                     tooltip: 'Eliminar día',
                     onPressed: () => _deleteDay(innerContext, _selectedDate!),
                   ),
