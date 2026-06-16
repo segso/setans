@@ -55,24 +55,30 @@ class AppMenubar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: SetansTheme.primary,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          const Text(
-            'Setans',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              const Text(
+                'Setans',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 32),
+              ...MenuItem.values.map((item) => _MenuButton(
+                    item: item,
+                    isSelected: selected == item,
+                    onTap: () => onItemSelected(item),
+                  )),
+            ],
           ),
-          const SizedBox(width: 32),
-          ...MenuItem.values.map((item) => _MenuButton(
-                item: item,
-                isSelected: selected == item,
-                onTap: () => onItemSelected(item),
-              )),
-        ],
+        ),
       ),
     );
   }
