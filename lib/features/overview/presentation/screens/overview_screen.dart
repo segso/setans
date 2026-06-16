@@ -3,13 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/overview_providers.dart';
 import '../../../../theme/app_theme.dart';
 
-class OverviewScreen extends ConsumerWidget {
+class OverviewScreen extends ConsumerStatefulWidget {
   final void Function(int studentId)? onStudentTap;
 
   const OverviewScreen({super.key, this.onStudentTap});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OverviewScreen> createState() => _OverviewScreenState();
+}
+
+class _OverviewScreenState extends ConsumerState<OverviewScreen> {
+  final ScrollController _horizontalScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _horizontalScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final dataAsync = ref.watch(overviewDataProvider);
 
     return Column(
@@ -68,10 +81,14 @@ class OverviewScreen extends ConsumerWidget {
       );
     }
 
-    return SingleChildScrollView(
+    return Scrollbar(
+      controller: _horizontalScrollController,
+      thumbVisibility: true,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: DataTable(
+        controller: _horizontalScrollController,
+        child: SingleChildScrollView(
+          child: DataTable(
           showCheckboxColumn: false,
           horizontalMargin: 4,
           headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
@@ -97,7 +114,7 @@ class OverviewScreen extends ConsumerWidget {
           rows: data.students.map((s) {
             final studentData = data.data[s.id] ?? {};
             return DataRow(
-              onSelectChanged: (_) => onStudentTap?.call(s.id),
+              onSelectChanged: (_) => widget.onStudentTap?.call(s.id),
               cells: [
                 DataCell(
                   Text(s.name, overflow: TextOverflow.ellipsis),
@@ -115,13 +132,14 @@ class OverviewScreen extends ConsumerWidget {
                             : SetansTheme.absent,
                       ),
                     ),
-                    onTap: () => onStudentTap?.call(s.id),
+                    onTap: () => widget.onStudentTap?.call(s.id),
                   );
                 }),
               ],
             );
           }).toList(),
         ),
+      ),
       ),
     );
   }
