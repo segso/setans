@@ -17,6 +17,7 @@ class StudentDetailScreen extends ConsumerWidget {
     final studentAsync = ref.watch(studentProvider(studentId));
     final assistancesAsync = ref.watch(studentAssistancesProvider(studentId));
     final totalDatesAsync = ref.watch(totalDatesProvider);
+    final allDatesAsync = ref.watch(allDatesProvider);
 
     return studentAsync.when(
       data: (student) {
@@ -25,17 +26,19 @@ class StudentDetailScreen extends ConsumerWidget {
         }
         return assistancesAsync.when(
           data: (assistances) => totalDatesAsync.when(
-            data: (totalDates) {
-              final presents =
-                  assistances.where((a) => a.present == 1).length;
-              final absents = totalDates - presents;
-              return _DetailBody(
-                student: student,
-                assistances: assistances,
-                presents: presents,
-                absents: absents,
-                totalDates: totalDates,
-                onSaved: (name, major, shift) async {
+            data: (totalDates) => allDatesAsync.when(
+              data: (allDates) {
+                final presents =
+                    assistances.where((a) => a.present == 1).length;
+                final absents = totalDates - presents;
+                return _DetailBody(
+                  student: student,
+                  assistances: assistances,
+                  allDates: allDates,
+                  presents: presents,
+                  absents: absents,
+                  totalDates: totalDates,
+                  onSaved: (name, major, shift) async {
               final dao = ref.read(studentsDaoProvider);
               await dao.updateStudent(
                 StudentsCompanion(
@@ -50,6 +53,9 @@ class StudentDetailScreen extends ConsumerWidget {
             },
           );
             },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('Error: $e')),
+          ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text('Error: $e')),
           ),
@@ -150,6 +156,7 @@ class _Badge extends StatelessWidget {
 class _DetailBody extends StatelessWidget {
   final Student student;
   final List<Assistance> assistances;
+  final List<String> allDates;
   final int presents;
   final int absents;
   final int totalDates;
@@ -158,6 +165,7 @@ class _DetailBody extends StatelessWidget {
   const _DetailBody({
     required this.student,
     required this.assistances,
+    required this.allDates,
     required this.presents,
     required this.absents,
     required this.totalDates,
@@ -191,7 +199,7 @@ class _DetailBody extends StatelessWidget {
                               .titleMedium
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        if (assistances.isNotEmpty) ...[
+                        if (allDates.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           _StatsRow(
                             presents: presents,
@@ -200,38 +208,43 @@ class _DetailBody extends StatelessWidget {
                           ),
                         ],
                     const SizedBox(height: 12),
-                    if (assistances.isEmpty)
+                    if (allDates.isEmpty)
                       const Text('Sin registros de asistencia')
                     else
-                      ...assistances.reversed.map(
-                        (a) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              Icon(
-                                a.present == 1
-                                    ? Icons.check_circle
-                                    : Icons.cancel,
-                                color: a.present == 1
-                                    ? SetansTheme.present
-                                    : SetansTheme.absent,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(_formatDate(a.date)),
-                              const Spacer(),
-                              Text(
-                                a.present == 1 ? 'Presente' : 'Ausente',
-                                style: TextStyle(
-                                  color: a.present == 1
+                      ...allDates.reversed.map(
+                        (date) {
+                          final record =
+                              assistances.where((a) => a.date == date).firstOrNull;
+                          final present = record?.present == 1;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  present
+                                      ? Icons.check_circle
+                                      : Icons.cancel,
+                                  color: present
                                       ? SetansTheme.present
                                       : SetansTheme.absent,
-                                  fontWeight: FontWeight.w600,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
+                                const SizedBox(width: 8),
+                                Text(_formatDate(date)),
+                                const Spacer(),
+                                Text(
+                                  present ? 'Presente' : 'Ausente',
+                                  style: TextStyle(
+                                    color: present
+                                        ? SetansTheme.present
+                                        : SetansTheme.absent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                   ],
                 ),
