@@ -84,11 +84,10 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
                 Icon(Icons.person, size: 32, color: SetansTheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'Estudiante #${s.id}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  'Estudiante: ${s.id}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(
@@ -98,10 +97,7 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
               ],
             ),
             const Divider(),
-            if (_editing)
-              _buildEditMode()
-            else
-              _buildViewMode(s),
+            if (_editing) _buildEditMode() else _buildViewMode(s),
             const Divider(),
             Row(
               children: [
