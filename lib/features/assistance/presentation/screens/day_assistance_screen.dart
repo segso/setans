@@ -7,7 +7,7 @@ import '../../../../core/database/app_database.dart';
 import '../../../../shared/providers/shared_providers.dart';
 import '../../../../shared/widgets/fuzzy_search_field.dart';
 
-class DayAssistanceScreen extends ConsumerWidget {
+class DayAssistanceScreen extends ConsumerStatefulWidget {
   final DateTime date;
   final void Function(int studentId)? onStudentTap;
 
@@ -17,13 +17,27 @@ class DayAssistanceScreen extends ConsumerWidget {
     this.onStudentTap,
   });
 
-  String get _dateStr =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  @override
+  ConsumerState<DayAssistanceScreen> createState() =>
+      _DayAssistanceScreenState();
+}
 
-  Future<void> _toggle(WidgetRef ref, int studentId) async {
+class _DayAssistanceScreenState extends ConsumerState<DayAssistanceScreen> {
+  String get _dateStr =>
+      '${widget.date.year}-${widget.date.month.toString().padLeft(2, '0')}-${widget.date.day.toString().padLeft(2, '0')}';
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+        () => ref.read(assistanceSearchProvider.notifier).update(''));
+  }
+
+  Future<void> _toggle(int studentId) async {
     final dao = ref.read(assistancesDaoProvider);
     final existing = await dao.getByDate(_dateStr);
-    final current = existing.where((a) => a.studentId == studentId).firstOrNull;
+    final current =
+        existing.where((a) => a.studentId == studentId).firstOrNull;
     await dao.upsert(AssistancesCompanion(
       studentId: Value(studentId),
       date: Value(_dateStr),
@@ -33,10 +47,9 @@ class DayAssistanceScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final studentsAsync = ref.watch(dayStudentsProvider(date));
-    final assistanceAsync = ref.watch(dayAssistanceProvider(date));
-    final query = ref.watch(assistanceSearchProvider);
+  Widget build(BuildContext context) {
+    final studentsAsync = ref.watch(filteredDayStudentsProvider);
+    final assistanceAsync = ref.watch(dayAssistanceProvider(widget.date));
 
     final searchNotifier = ref.read(assistanceSearchProvider.notifier);
 
@@ -51,36 +64,22 @@ class DayAssistanceScreen extends ConsumerWidget {
         ),
         Expanded(
           child: studentsAsync.when(
-            data: (students) {
-              final filtered = _filter(students, query);
-              return assistanceAsync.when(
-                data: (assistanceMap) => AssistanceTable(
-                  students: filtered,
-                  assistanceMap: assistanceMap,
-                  onToggle: (id) => _toggle(ref, id),
-                  onStudentTap: onStudentTap,
-                ),
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error: $e')),
-              );
-            },
+            data: (students) => assistanceAsync.when(
+              data: (assistanceMap) => AssistanceTable(
+                students: students,
+                assistanceMap: assistanceMap,
+                onToggle: _toggle,
+                onStudentTap: widget.onStudentTap,
+              ),
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+            ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text('Error: $e')),
           ),
         ),
       ],
     );
-  }
-
-  List<Student> _filter(List<Student> students, String query) {
-    if (query.isEmpty) return students;
-    final q = query.toLowerCase();
-    return students.where((s) {
-      return s.id.toString().contains(q) ||
-          s.name.toLowerCase().contains(q) ||
-          s.major.toLowerCase().contains(q) ||
-          s.shift.toLowerCase().contains(q);
-    }).toList();
   }
 }
