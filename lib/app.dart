@@ -22,6 +22,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   MenuItem _selectedItem = MenuItem.calendar;
   DateTime? _selectedDate;
   int? _selectedStudentId;
+  int? _returnToStudentId;
   final _tutorialManager = TutorialManager();
 
   void _onMenuItemSelected(MenuItem item) {
@@ -40,6 +41,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
           _selectedItem = item;
           _selectedDate = null;
           _selectedStudentId = null;
+          _returnToStudentId = null;
         });
     }
   }
@@ -48,13 +50,22 @@ class _SetansAppState extends ConsumerState<SetansApp> {
     setState(() {
       _selectedDate = date;
       _selectedItem = MenuItem.calendar;
+      if (_selectedStudentId != null) {
+        _returnToStudentId = _selectedStudentId;
+      }
       _selectedStudentId = null;
     });
   }
 
   void _onBackToCalendar() {
     ref.read(mutationProvider.notifier).bump();
-    setState(() => _selectedDate = null);
+    setState(() {
+      if (_returnToStudentId != null) {
+        _selectedStudentId = _returnToStudentId;
+        _returnToStudentId = null;
+      }
+      _selectedDate = null;
+    });
   }
 
   void _onStudentTap(int studentId) {
@@ -63,7 +74,10 @@ class _SetansAppState extends ConsumerState<SetansApp> {
 
   void _onBackFromStudent() {
     ref.read(mutationProvider.notifier).bump();
-    setState(() => _selectedStudentId = null);
+    setState(() {
+      _selectedStudentId = null;
+      _returnToStudentId = null;
+    });
   }
 
   @override
@@ -121,7 +135,8 @@ class _SetansAppState extends ConsumerState<SetansApp> {
                 TextButton.icon(
                   onPressed: _onBackToCalendar,
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text('Calendario'),
+                  label: Text(
+                      _returnToStudentId != null ? 'Volver' : 'Calendario'),
                 ),
                 const Spacer(),
                 Text(
