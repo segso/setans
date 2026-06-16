@@ -15,7 +15,7 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
     aliasedName,
     false,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -71,8 +71,6 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -110,7 +108,7 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Student map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -257,24 +255,20 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   final Value<String> major;
   final Value<String> shift;
   final Value<String> createdAt;
-  final Value<int> rowid;
   const StudentsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.major = const Value.absent(),
     this.shift = const Value.absent(),
     this.createdAt = const Value.absent(),
-    this.rowid = const Value.absent(),
   });
   StudentsCompanion.insert({
-    required int id,
+    this.id = const Value.absent(),
     required String name,
     required String major,
     required String shift,
     required String createdAt,
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       name = Value(name),
+  }) : name = Value(name),
        major = Value(major),
        shift = Value(shift),
        createdAt = Value(createdAt);
@@ -284,7 +278,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     Expression<String>? major,
     Expression<String>? shift,
     Expression<String>? createdAt,
-    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -292,7 +285,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       if (major != null) 'major': major,
       if (shift != null) 'shift': shift,
       if (createdAt != null) 'created_at': createdAt,
-      if (rowid != null) 'rowid': rowid,
     });
   }
 
@@ -302,7 +294,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     Value<String>? major,
     Value<String>? shift,
     Value<String>? createdAt,
-    Value<int>? rowid,
   }) {
     return StudentsCompanion(
       id: id ?? this.id,
@@ -310,7 +301,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       major: major ?? this.major,
       shift: shift ?? this.shift,
       createdAt: createdAt ?? this.createdAt,
-      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -332,9 +322,6 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     if (createdAt.present) {
       map['created_at'] = Variable<String>(createdAt.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
     return map;
   }
 
@@ -345,8 +332,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
           ..write('name: $name, ')
           ..write('major: $major, ')
           ..write('shift: $shift, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('rowid: $rowid')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -633,12 +619,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$StudentsTableCreateCompanionBuilder =
     StudentsCompanion Function({
-      required int id,
+      Value<int> id,
       required String name,
       required String major,
       required String shift,
       required String createdAt,
-      Value<int> rowid,
     });
 typedef $$StudentsTableUpdateCompanionBuilder =
     StudentsCompanion Function({
@@ -647,7 +632,6 @@ typedef $$StudentsTableUpdateCompanionBuilder =
       Value<String> major,
       Value<String> shift,
       Value<String> createdAt,
-      Value<int> rowid,
     });
 
 final class $$StudentsTableReferences
@@ -851,30 +835,26 @@ class $$StudentsTableTableManager
                 Value<String> major = const Value.absent(),
                 Value<String> shift = const Value.absent(),
                 Value<String> createdAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
               }) => StudentsCompanion(
                 id: id,
                 name: name,
                 major: major,
                 shift: shift,
                 createdAt: createdAt,
-                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                required int id,
+                Value<int> id = const Value.absent(),
                 required String name,
                 required String major,
                 required String shift,
                 required String createdAt,
-                Value<int> rowid = const Value.absent(),
               }) => StudentsCompanion.insert(
                 id: id,
                 name: name,
                 major: major,
                 shift: shift,
                 createdAt: createdAt,
-                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(

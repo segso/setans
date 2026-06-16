@@ -6,4 +6,7 @@ class Students extends Table {
   TextColumn get major => text()();
   TextColumn get shift => text()();
   TextColumn get createdAt => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
