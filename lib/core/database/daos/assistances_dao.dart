@@ -28,4 +28,7 @@ class AssistancesDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> upsert(AssistancesCompanion assistance) =>
       into(assistances).insertOnConflictUpdate(assistance);
+
+  Future<void> deleteByDate(String date) =>
+      (delete(assistances)..where((a) => a.date.equals(date))).go();
 }
