@@ -48,6 +48,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
     setState(() {
       _selectedDate = date;
       _selectedItem = MenuItem.calendar;
+      _selectedStudentId = null;
     });
   }
 
@@ -101,7 +102,10 @@ class _SetansAppState extends ConsumerState<SetansApp> {
             ),
           ),
           Expanded(
-            child: StudentDetailScreen(studentId: _selectedStudentId!),
+            child: StudentDetailScreen(
+              studentId: _selectedStudentId!,
+              onDateTap: _onDaySelected,
+            ),
           ),
         ],
       );
