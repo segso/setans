@@ -9,8 +9,9 @@ import '../widgets/student_info_card.dart';
 
 class StudentDetailScreen extends ConsumerWidget {
   final int studentId;
+  final void Function(DateTime date)? onDateTap;
 
-  const StudentDetailScreen({super.key, required this.studentId});
+  const StudentDetailScreen({super.key, required this.studentId, this.onDateTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,6 +39,7 @@ class StudentDetailScreen extends ConsumerWidget {
                   presents: presents,
                   absents: absents,
                   totalDates: totalDates,
+                  onDateTap: onDateTap,
                   onSaved: (name, major, shift) async {
               final dao = ref.read(studentsDaoProvider);
               await dao.updateStudent(
@@ -161,6 +163,7 @@ class _DetailBody extends StatelessWidget {
   final int absents;
   final int totalDates;
   final Future<void> Function(String name, String major, String shift) onSaved;
+  final void Function(DateTime date)? onDateTap;
 
   const _DetailBody({
     required this.student,
@@ -170,6 +173,7 @@ class _DetailBody extends StatelessWidget {
     required this.absents,
     required this.totalDates,
     required this.onSaved,
+    this.onDateTap,
   });
 
   @override
@@ -218,7 +222,23 @@ class _DetailBody extends StatelessWidget {
                           final present = record?.present == 1;
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
+                            child: InkWell(
+                              onTap: onDateTap != null
+                                  ? () {
+                                      final parts = date.split('-');
+                                      final dt = DateTime(
+                                        int.parse(parts[0]),
+                                        int.parse(parts[1]),
+                                        int.parse(parts[2]),
+                                      );
+                                      onDateTap!(dt);
+                                    }
+                                  : null,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                child: Row(
                               children: [
                                 Icon(
                                   present
@@ -243,8 +263,10 @@ class _DetailBody extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          );
-                        },
+                          ),
+                        ),
+                      );
+                    },
                       ),
                   ],
                 ),
