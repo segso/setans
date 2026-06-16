@@ -17,7 +17,7 @@ class RegisterScreen extends ConsumerWidget {
       MaterialPageRoute(builder: (_) => const StudentFormScreen()),
     );
     if (result == true) {
-      ref.invalidate(filteredStudentsProvider);
+      ref.read(mutationProvider.notifier).bump();
     }
   }
 
@@ -54,7 +54,7 @@ class RegisterScreen extends ConsumerWidget {
               onStudentTap: onStudentTap ?? (_) {},
               onDeleteStudent: (id) async {
                 await ref.read(studentsDaoProvider).deleteStudent(id);
-                ref.invalidate(filteredStudentsProvider);
+                ref.read(mutationProvider.notifier).bump();
               },
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
