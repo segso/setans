@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'theme/app_theme.dart';
 import 'shared/widgets/app_menubar.dart';
 import 'features/calendar/presentation/screens/calendar_screen.dart';
 import 'features/register/presentation/screens/register_screen.dart';
+import 'features/register/presentation/providers/register_providers.dart';
 import 'features/assistance/presentation/screens/day_assistance_screen.dart';
 import 'features/student_detail/presentation/screens/student_detail_screen.dart';
+import 'features/student_detail/presentation/providers/student_detail_providers.dart';
 import 'features/overview/presentation/screens/overview_screen.dart';
 import 'features/tutorial/presentation/widgets/tutorial_manager.dart';
 import 'features/about/presentation/widgets/about_dialog.dart';
 
-class SetansApp extends StatefulWidget {
+class SetansApp extends ConsumerStatefulWidget {
   const SetansApp({super.key});
 
   @override
-  State<SetansApp> createState() => _SetansAppState();
+  ConsumerState<SetansApp> createState() => _SetansAppState();
 }
 
-class _SetansAppState extends State<SetansApp> {
+class _SetansAppState extends ConsumerState<SetansApp> {
   MenuItem _selectedItem = MenuItem.calendar;
   DateTime? _selectedDate;
   int? _selectedStudentId;
@@ -50,10 +53,18 @@ class _SetansAppState extends State<SetansApp> {
   }
 
   void _onBackToCalendar() {
+    ref.invalidate(filteredStudentsProvider);
     setState(() => _selectedDate = null);
   }
 
+  void _onStudentTap(int studentId) {
+    setState(() => _selectedStudentId = studentId);
+  }
+
   void _onBackFromStudent() {
+    ref.invalidate(filteredStudentsProvider);
+    ref.invalidate(studentProvider(_selectedStudentId!));
+    ref.invalidate(studentAssistancesProvider(_selectedStudentId!));
     setState(() => _selectedStudentId = null);
   }
 
@@ -133,7 +144,7 @@ class _SetansAppState extends State<SetansApp> {
       case MenuItem.calendar:
         return CalendarScreen(onDaySelected: _onDaySelected);
       case MenuItem.register:
-        return RegisterScreen();
+        return RegisterScreen(onStudentTap: _onStudentTap);
       case MenuItem.overview:
         return const OverviewScreen();
       case MenuItem.tutorial:
