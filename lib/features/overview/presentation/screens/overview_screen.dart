@@ -96,65 +96,93 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
       );
     }
 
-    return Scrollbar(
-      controller: _horizontalScrollController,
-      thumbVisibility: true,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        controller: _horizontalScrollController,
-        child: SingleChildScrollView(
-          child: DataTable(
-          showCheckboxColumn: false,
-          horizontalMargin: 4,
-          headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
-          columnSpacing: 0,
-          columns: [
-            DataColumn(
-              label: const Text('Estudiante'),
-              columnWidth: const FixedColumnWidth(220),
-            ),
-            ...data.dates.map((d) {
-              final parts = d.split('-');
-              final label = '${parts[2]}/${parts[1]}';
-              return DataColumn(
-                headingRowAlignment: MainAxisAlignment.center,
-                label: Text(
-                  label,
-                  style: const TextStyle(fontSize: 10),
-                ),
-                columnWidth: const FixedColumnWidth(44),
-              );
-            }),
-          ],
-          rows: data.students.map((s) {
-            final studentData = data.data[s.id] ?? {};
-            return DataRow(
-              onSelectChanged: (_) => widget.onStudentTap?.call(s.id),
-              cells: [
-                DataCell(
-                  Text(s.name, overflow: TextOverflow.ellipsis),
-                ),
-                ...data.dates.map((d) {
-                  final present = studentData[d] == 1;
-                  return DataCell(
-                    Align(
-                      alignment: Alignment.center,
-                      child: Icon(
-                        present ? Icons.check_circle : Icons.cancel,
-                        size: 18,
-                        color: present
-                            ? SetansTheme.present
-                            : SetansTheme.absent,
-                      ),
-                    ),
-                    onTap: () => widget.onStudentTap?.call(s.id),
-                  );
-                }),
-              ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final viewportWidth = constraints.maxWidth;
+        final dateTotal = data.dates.length * 44.0;
+        final maxNameLen =
+            data.students.fold<int>(0, (m, s) => s.name.length > m ? s.name.length : m);
+        const approxId = 120.0;
+        final approxName = (maxNameLen * 8.5).clamp(80.0, 500.0);
+        final tableWidth = dateTotal + approxId + approxName + 16;
+        final hasExtraSpace = viewportWidth > tableWidth;
+
+        return Scrollbar(
+          controller: _horizontalScrollController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            controller: _horizontalScrollController,
+            child: hasExtraSpace
+                ? SizedBox(
+                    width: viewportWidth,
+                    child: _buildDataTable(data, true),
+                  )
+                : _buildDataTable(data, false),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDataTable(OverviewData data, bool fill) {
+    return SingleChildScrollView(
+      child: DataTable(
+        showCheckboxColumn: false,
+        horizontalMargin: 4,
+        headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
+        columnSpacing: 8,
+        columns: [
+          const DataColumn(
+            label: Text('Número de control'),
+            columnWidth: IntrinsicColumnWidth(),
+          ),
+          DataColumn(
+            label: const Text('Nombre'),
+            columnWidth:
+                fill ? const IntrinsicColumnWidth(flex: 1) : const IntrinsicColumnWidth(),
+          ),
+          ...data.dates.map((d) {
+            final parts = d.split('-');
+            final label = '${parts[2]}/${parts[1]}';
+            return DataColumn(
+              headingRowAlignment: MainAxisAlignment.center,
+              label: Text(
+                label,
+                style: const TextStyle(fontSize: 10),
+              ),
+              columnWidth: const FixedColumnWidth(44),
             );
-          }).toList(),
-        ),
-      ),
+          }),
+        ],
+        rows: data.students.map((s) {
+          final studentData = data.data[s.id] ?? {};
+          return DataRow(
+            onSelectChanged: (_) => widget.onStudentTap?.call(s.id),
+            cells: [
+              DataCell(
+                Text(s.id.toString()),
+              ),
+              DataCell(
+                Text(s.name, overflow: TextOverflow.ellipsis),
+              ),
+              ...data.dates.map((d) {
+                final present = studentData[d] == 1;
+                return DataCell(
+                  Align(
+                    alignment: Alignment.center,
+                    child: Icon(
+                      present ? Icons.check_circle : Icons.cancel,
+                      size: 18,
+                      color: present ? SetansTheme.present : SetansTheme.absent,
+                    ),
+                  ),
+                  onTap: () => widget.onStudentTap?.call(s.id),
+                );
+              }),
+            ],
+          );
+        }).toList(),
       ),
     );
   }
