@@ -13,6 +13,7 @@ final studentSearchProvider =
     NotifierProvider<SearchNotifier, String>(SearchNotifier.new);
 
 final filteredStudentsProvider = FutureProvider<List<Student>>((ref) async {
+  ref.watch(mutationProvider);
   final dao = ref.watch(studentsDaoProvider);
   final query = ref.watch(studentSearchProvider);
   if (query.isEmpty) return dao.getAll();
