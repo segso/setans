@@ -5,6 +5,7 @@ part of 'students_dao.dart';
 // ignore_for_file: type=lint
 mixin _$StudentsDaoMixin on DatabaseAccessor<AppDatabase> {
   $StudentsTable get students => attachedDatabase.students;
+  $AssistancesTable get assistances => attachedDatabase.assistances;
   StudentsDaoManager get managers => StudentsDaoManager(this);
 }
 
@@ -13,4 +14,6 @@ class StudentsDaoManager {
   StudentsDaoManager(this._db);
   $$StudentsTableTableManager get students =>
       $$StudentsTableTableManager(_db.attachedDatabase, _db.students);
+  $$AssistancesTableTableManager get assistances =>
+      $$AssistancesTableTableManager(_db.attachedDatabase, _db.assistances);
 }

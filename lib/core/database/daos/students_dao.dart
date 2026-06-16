@@ -1,10 +1,11 @@
 import 'package:drift/drift.dart';
 import '../app_database.dart';
 import '../tables/students_table.dart';
+import '../tables/assistances_table.dart';
 
 part 'students_dao.g.dart';
 
-@DriftAccessor(tables: [Students])
+@DriftAccessor(tables: [Students, Assistances])
 class StudentsDao extends DatabaseAccessor<AppDatabase> with _$StudentsDaoMixin {
   StudentsDao(super.db);
 
@@ -32,6 +33,8 @@ class StudentsDao extends DatabaseAccessor<AppDatabase> with _$StudentsDaoMixin 
   Future<void> updateStudent(StudentsCompanion student) =>
       update(students).replace(student);
 
-  Future<void> deleteStudent(int id) =>
-      (delete(students)..where((s) => s.id.equals(id))).go();
+  Future<void> deleteStudent(int id) async {
+    await (delete(assistances)..where((a) => a.studentId.equals(id))).go();
+    await (delete(students)..where((s) => s.id.equals(id))).go();
+  }
 }
