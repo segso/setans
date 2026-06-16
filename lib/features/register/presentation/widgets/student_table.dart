@@ -63,52 +63,66 @@ class StudentTable extends StatelessWidget {
     }
 
     return SingleChildScrollView(
-      child: SizedBox(
-        width: double.infinity,
-        child: DataTable(
-          headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
-          columns: const [
-            DataColumn(
-              label: Text('ID'),
-              columnWidth: FlexColumnWidth(0.8),
+      child: DataTable(
+        showCheckboxColumn: false,
+        horizontalMargin: 8,
+        headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
+        columns: [
+          DataColumn(
+            label: Text('Número de control'),
+            columnWidth: MaxColumnWidth(
+              FixedColumnWidth(160),
+              FlexColumnWidth(0.8),
             ),
-            DataColumn(
-              label: Text('Nombre'),
-              columnWidth: FlexColumnWidth(3),
+          ),
+          DataColumn(
+            label: Text('Nombre'),
+            columnWidth: FlexColumnWidth(3),
+          ),
+          DataColumn(
+            label: Text('Especialidad'),
+            columnWidth: FlexColumnWidth(2),
+          ),
+          DataColumn(
+            label: Text('Turno'),
+            columnWidth: FlexColumnWidth(1.5),
+          ),
+          const DataColumn(
+            label: Text(''),
+            columnWidth: MaxColumnWidth(
+              FixedColumnWidth(80),
+              FlexColumnWidth(0.4),
             ),
-            DataColumn(
-              label: Text('Especialidad'),
-              columnWidth: FlexColumnWidth(2),
-            ),
-            DataColumn(
-              label: Text('Turno'),
-              columnWidth: FlexColumnWidth(1.5),
-            ),
-            DataColumn(
-              label: Text(''),
-              columnWidth: FixedColumnWidth(48),
-            ),
-          ],
-          rows: students.map((s) {
-            return DataRow(
-              onSelectChanged: (_) => onStudentTap(s.id),
-              cells: [
-                DataCell(Text(s.id.toString())),
-                DataCell(Text(s.name)),
-                DataCell(Text(s.major)),
-                DataCell(Text(s.shift)),
-                DataCell(
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 20),
-                    color: SetansTheme.absent,
-                    onPressed: () => _confirmDelete(context, s),
-                    tooltip: 'Eliminar',
-                  ),
+          ),
+        ],
+        rows: students.map((s) {
+          return DataRow(
+            onSelectChanged: (_) => onStudentTap(s.id),
+            cells: [
+              DataCell(SizedBox(
+                  width: double.infinity,
+                  child: Text(s.id.toString(),
+                      overflow: TextOverflow.ellipsis))),
+              DataCell(SizedBox(
+                  width: double.infinity,
+                  child: Text(s.name, overflow: TextOverflow.ellipsis))),
+              DataCell(SizedBox(
+                  width: double.infinity,
+                  child: Text(s.major, overflow: TextOverflow.ellipsis))),
+              DataCell(SizedBox(
+                  width: double.infinity,
+                  child: Text(s.shift, overflow: TextOverflow.ellipsis))),
+              DataCell(
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  color: SetansTheme.absent,
+                  onPressed: () => _confirmDelete(context, s),
+                  tooltip: 'Eliminar',
                 ),
-              ],
-            );
-          }).toList(),
-        ),
+              ),
+            ],
+          );
+        }).toList(),
       ),
     );
   }
