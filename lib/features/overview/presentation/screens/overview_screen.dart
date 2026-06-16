@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/overview_providers.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../shared/widgets/fuzzy_search_field.dart';
 
 class OverviewScreen extends ConsumerStatefulWidget {
   final void Function(int studentId)? onStudentTap;
@@ -16,6 +17,13 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
   final ScrollController _horizontalScrollController = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+        () => ref.read(overviewSearchProvider.notifier).update(''));
+  }
+
+  @override
   void dispose() {
     _horizontalScrollController.dispose();
     super.dispose();
@@ -23,7 +31,8 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dataAsync = ref.watch(overviewDataProvider);
+    final dataAsync = ref.watch(filteredOverviewDataProvider);
+    final searchNotifier = ref.read(overviewSearchProvider.notifier);
 
     return Column(
       children: [
@@ -31,7 +40,13 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Row(
             children: [
-              const Spacer(),
+              Expanded(
+                child: FuzzySearchField(
+                  hintText: 'Buscar por ID, nombre, especialidad o turno...',
+                  onChanged: (v) => searchNotifier.update(v),
+                ),
+              ),
+              const SizedBox(width: 12),
               ElevatedButton.icon(
                 onPressed: dataAsync.maybeWhen(
                   data: (data) => () => _export(context, data),
