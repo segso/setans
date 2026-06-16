@@ -14,3 +14,10 @@ final studentAssistancesProvider =
   final dao = ref.watch(assistancesDaoProvider);
   return dao.getByStudent(id);
 });
+
+final totalDatesProvider = FutureProvider<int>((ref) async {
+  ref.watch(mutationProvider);
+  final dao = ref.watch(assistancesDaoProvider);
+  final dates = await dao.getDatesWithRegistries();
+  return dates.length;
+});
