@@ -30,8 +30,9 @@ class AppDatabase extends _$AppDatabase {
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    final dir = await getApplicationSupportDirectory();
-    await Directory(dir.path).create(recursive: true);
+    final supportDir = await getApplicationSupportDirectory();
+    final dir = Directory(p.join(supportDir.parent.path, 'setans'));
+    await dir.create(recursive: true);
     final file = File(p.join(dir.path, 'setans.db'));
     return NativeDatabase(file);
   });
