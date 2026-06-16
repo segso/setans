@@ -21,3 +21,9 @@ final totalDatesProvider = FutureProvider<int>((ref) async {
   final dates = await dao.getDatesWithRegistries();
   return dates.length;
 });
+
+final allDatesProvider = FutureProvider<List<String>>((ref) async {
+  ref.watch(mutationProvider);
+  final dao = ref.watch(assistancesDaoProvider);
+  return dao.getDatesWithRegistries();
+});
