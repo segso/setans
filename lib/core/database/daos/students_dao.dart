@@ -14,18 +14,23 @@ class StudentsDao extends DatabaseAccessor<AppDatabase> with _$StudentsDaoMixin 
   Future<Student?> getById(int id) =>
       (select(students)..where((s) => s.id.equals(id))).getSingleOrNull();
 
-  Future<List<Student>> search(String query) {
-    final pattern = '%$query%';
-    return (select(students)
-          ..where(
-            (s) =>
-                s.id.cast<String>().like(pattern) |
-                s.name.like(pattern) |
-                s.major.like(pattern) |
-                s.shift.like(pattern),
-          ))
-        .get();
+  Future<List<Student>> search(String query) async {
+    final tokens = _normalize(query)
+        .split(RegExp(r'\s+'))
+        .where((t) => t.isNotEmpty)
+        .toList();
+    if (tokens.isEmpty) return getAll();
+
+    final all = await select(students).get();
+    return all.where((s) {
+      final text = _normalize(
+          '${s.id} ${s.name} ${s.major} ${s.shift}');
+      return tokens.every((t) => text.contains(t));
+    }).toList();
   }
+
+  String _normalize(String s) =>
+      s.toLowerCase().replaceAll('á', 'a').replaceAll('é', 'e').replaceAll('í', 'i').replaceAll('ó', 'o').replaceAll('ú', 'u').replaceAll('ü', 'u').replaceAll('ñ', 'n');
 
   Future<void> insert(StudentsCompanion student) =>
       into(students).insert(student);
