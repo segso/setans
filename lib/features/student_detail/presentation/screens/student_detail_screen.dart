@@ -37,8 +37,7 @@ class StudentDetailScreen extends ConsumerWidget {
                   createdAt: drift.Value(student.createdAt),
                 ),
               );
-              ref.invalidate(studentProvider(studentId));
-              ref.invalidate(studentAssistancesProvider(studentId));
+              ref.read(mutationProvider.notifier).bump();
             },
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -47,6 +46,86 @@ class StudentDetailScreen extends ConsumerWidget {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
+    );
+  }
+}
+
+String _formatDate(String iso) {
+  final parts = iso.split('-');
+  return '${parts[2]}/${parts[1]}/${parts[0]}';
+}
+
+class _StatsRow extends StatelessWidget {
+  final List<Assistance> assistances;
+  const _StatsRow({required this.assistances});
+
+  @override
+  Widget build(BuildContext context) {
+    final presents = assistances.where((a) => a.present == 1).length;
+    final absents = assistances.where((a) => a.present == 0).length;
+    return Row(
+      children: [
+        _Badge(
+          label: 'Presentes',
+          count: presents,
+          color: SetansTheme.present,
+        ),
+        const SizedBox(width: 12),
+        _Badge(
+          label: 'Faltas',
+          count: absents,
+          color: SetansTheme.absent,
+        ),
+        const SizedBox(width: 12),
+        _Badge(
+          label: 'Total',
+          count: assistances.length,
+          color: SetansTheme.primary,
+        ),
+      ],
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String label;
+  final int count;
+  final Color color;
+  const _Badge({
+    required this.label,
+    required this.count,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$count',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -87,6 +166,10 @@ class _DetailBody extends StatelessWidget {
                           .titleMedium
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
+                    if (assistances.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      _StatsRow(assistances: assistances),
+                    ],
                     const SizedBox(height: 12),
                     if (assistances.isEmpty)
                       const Text('Sin registros de asistencia')
@@ -106,7 +189,7 @@ class _DetailBody extends StatelessWidget {
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
-                              Text(a.date),
+                              Text(_formatDate(a.date)),
                               const Spacer(),
                               Text(
                                 a.present == 1 ? 'Presente' : 'Ausente',
