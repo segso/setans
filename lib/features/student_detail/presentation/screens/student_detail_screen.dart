@@ -16,6 +16,7 @@ class StudentDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final studentAsync = ref.watch(studentProvider(studentId));
     final assistancesAsync = ref.watch(studentAssistancesProvider(studentId));
+    final totalDatesAsync = ref.watch(totalDatesProvider);
 
     return studentAsync.when(
       data: (student) {
@@ -23,10 +24,18 @@ class StudentDetailScreen extends ConsumerWidget {
           return const Center(child: Text('Estudiante no encontrado'));
         }
         return assistancesAsync.when(
-          data: (assistances) => _DetailBody(
-            student: student,
-            assistances: assistances,
-            onSaved: (name, major, shift) async {
+          data: (assistances) => totalDatesAsync.when(
+            data: (totalDates) {
+              final presents =
+                  assistances.where((a) => a.present == 1).length;
+              final absents = totalDates - presents;
+              return _DetailBody(
+                student: student,
+                assistances: assistances,
+                presents: presents,
+                absents: absents,
+                totalDates: totalDates,
+                onSaved: (name, major, shift) async {
               final dao = ref.read(studentsDaoProvider);
               await dao.updateStudent(
                 StudentsCompanion(
@@ -39,6 +48,10 @@ class StudentDetailScreen extends ConsumerWidget {
               );
               ref.read(mutationProvider.notifier).bump();
             },
+          );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('Error: $e')),
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(child: Text('Error: $e')),
@@ -56,13 +69,17 @@ String _formatDate(String iso) {
 }
 
 class _StatsRow extends StatelessWidget {
-  final List<Assistance> assistances;
-  const _StatsRow({required this.assistances});
+  final int presents;
+  final int absents;
+  final int total;
+  const _StatsRow({
+    required this.presents,
+    required this.absents,
+    required this.total,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final presents = assistances.where((a) => a.present == 1).length;
-    final absents = assistances.where((a) => a.present == 0).length;
     return Row(
       children: [
         _Badge(
@@ -79,7 +96,7 @@ class _StatsRow extends StatelessWidget {
         const SizedBox(width: 12),
         _Badge(
           label: 'Total',
-          count: assistances.length,
+          count: total,
           color: SetansTheme.primary,
         ),
       ],
@@ -133,11 +150,17 @@ class _Badge extends StatelessWidget {
 class _DetailBody extends StatelessWidget {
   final Student student;
   final List<Assistance> assistances;
+  final int presents;
+  final int absents;
+  final int totalDates;
   final Future<void> Function(String name, String major, String shift) onSaved;
 
   const _DetailBody({
     required this.student,
     required this.assistances,
+    required this.presents,
+    required this.absents,
+    required this.totalDates,
     required this.onSaved,
   });
 
@@ -146,30 +169,36 @@ class _DetailBody extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          StudentInfoCard(
-            student: student,
-            assistances: assistances,
-            onSaved: onSaved,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Historial de asistencias',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    if (assistances.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      _StatsRow(assistances: assistances),
-                    ],
+            StudentInfoCard(
+                student: student,
+                presents: presents,
+                absents: absents,
+                total: totalDates,
+                onSaved: onSaved,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Historial de asistencias',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        if (assistances.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _StatsRow(
+                            presents: presents,
+                            absents: absents,
+                            total: totalDates,
+                          ),
+                        ],
                     const SizedBox(height: 12),
                     if (assistances.isEmpty)
                       const Text('Sin registros de asistencia')

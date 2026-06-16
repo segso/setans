@@ -4,13 +4,17 @@ import '../../../../theme/app_theme.dart';
 
 class StudentInfoCard extends StatefulWidget {
   final Student student;
-  final List<Assistance> assistances;
+  final int presents;
+  final int absents;
+  final int total;
   final Future<void> Function(String name, String major, String shift) onSaved;
 
   const StudentInfoCard({
     super.key,
     required this.student,
-    required this.assistances,
+    required this.presents,
+    required this.absents,
+    required this.total,
     required this.onSaved,
   });
 
@@ -68,9 +72,6 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
   @override
   Widget build(BuildContext context) {
     final s = widget.student;
-    final total = widget.assistances.length;
-    final present = widget.assistances.where((a) => a.present == 1).length;
-    final absent = total - present;
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -103,19 +104,19 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
               children: [
                 _StatBadge(
                   label: 'Asistencias',
-                  count: present,
+                  count: widget.presents,
                   color: SetansTheme.present,
                 ),
                 const SizedBox(width: 16),
                 _StatBadge(
                   label: 'Faltas',
-                  count: absent,
+                  count: widget.absents,
                   color: SetansTheme.absent,
                 ),
                 const SizedBox(width: 16),
                 _StatBadge(
                   label: 'Total',
-                  count: total,
+                  count: widget.total,
                   color: SetansTheme.primary,
                 ),
               ],
