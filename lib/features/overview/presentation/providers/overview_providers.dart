@@ -19,11 +19,15 @@ class OverviewData {
   });
 
   String toCsv() {
+    final sortedDates = dates.reversed.toList();
     final rows = <List<dynamic>>[
-      ['Estudiante', ...dates],
+      ['Número de control', 'Nombre', 'Especialidad', 'Turno', ...sortedDates],
       ...students.map((s) => [
-            '${s.id} - ${s.name}',
-            ...dates.map((d) => (data[s.id]?[d] ?? 0)),
+            s.id.toString(),
+            s.name,
+            s.major,
+            s.shift,
+            ...sortedDates.map((d) => (data[s.id]?[d] ?? 0)),
           ]),
     ];
     return const CsvEncoder(addBom: true).convert(rows);
