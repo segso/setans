@@ -3,15 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../../../core/database/app_database.dart';
 import '../../../../shared/providers/shared_providers.dart';
+import '../../../../shared/widgets/year_calendar.dart';
 import '../providers/student_detail_providers.dart';
 import '../../../../theme/app_theme.dart';
 import '../widgets/student_info_card.dart';
 
 class StudentDetailScreen extends ConsumerWidget {
   final int studentId;
+  final int currentYear;
+  final void Function(int offset) onYearChanged;
   final void Function(DateTime date)? onDateTap;
 
-  const StudentDetailScreen({super.key, required this.studentId, this.onDateTap});
+  const StudentDetailScreen({
+    super.key,
+    required this.studentId,
+    required this.currentYear,
+    required this.onYearChanged,
+    this.onDateTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,6 +48,8 @@ class StudentDetailScreen extends ConsumerWidget {
                   presents: presents,
                   absents: absents,
                   totalDates: totalDates,
+                  currentYear: currentYear,
+                  onYearChanged: onYearChanged,
                   onDateTap: onDateTap,
                   onSaved: (name, major, shift) async {
               final dao = ref.read(studentsDaoProvider);
@@ -69,11 +80,6 @@ class StudentDetailScreen extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
     );
   }
-}
-
-String _formatDate(String iso) {
-  final parts = iso.split('-');
-  return '${parts[2]}/${parts[1]}/${parts[0]}';
 }
 
 class _StatsRow extends StatelessWidget {
@@ -162,6 +168,8 @@ class _DetailBody extends StatelessWidget {
   final int presents;
   final int absents;
   final int totalDates;
+  final int currentYear;
+  final void Function(int offset) onYearChanged;
   final Future<void> Function(String name, String major, String shift) onSaved;
   final void Function(DateTime date)? onDateTap;
 
@@ -172,102 +180,98 @@ class _DetailBody extends StatelessWidget {
     required this.presents,
     required this.absents,
     required this.totalDates,
+    required this.currentYear,
+    required this.onYearChanged,
     required this.onSaved,
     this.onDateTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final presentDays = assistances
+        .where((a) => a.present == 1)
+        .map((a) {
+          final parts = a.date.split('-');
+          return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        })
+        .toSet();
+
+    final absentDays = allDates
+        .where((d) {
+          final record = assistances.where((a) => a.date == d).firstOrNull;
+          return record == null || record.present == 0;
+        })
+        .map((d) {
+          final parts = d.split('-');
+          return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        })
+        .toSet();
+
     return SingleChildScrollView(
       child: Column(
         children: [
-            StudentInfoCard(
-                student: student,
-                presents: presents,
-                absents: absents,
-                total: totalDates,
-                onSaved: onSaved,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Historial de asistencias',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        if (allDates.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _StatsRow(
-                            presents: presents,
-                            absents: absents,
-                            total: totalDates,
-                          ),
-                        ],
+          StudentInfoCard(
+            student: student,
+            presents: presents,
+            absents: absents,
+            total: totalDates,
+            onSaved: onSaved,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Historial de asistencias',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    if (allDates.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      _StatsRow(
+                        presents: presents,
+                        absents: absents,
+                        total: totalDates,
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     if (allDates.isEmpty)
                       const Text('Sin registros de asistencia')
-                    else
-                      ...allDates.reversed.map(
-                        (date) {
-                          final record =
-                              assistances.where((a) => a.date == date).firstOrNull;
-                          final present = record?.present == 1;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: InkWell(
-                              onTap: onDateTap != null
-                                  ? () {
-                                      final parts = date.split('-');
-                                      final dt = DateTime(
-                                        int.parse(parts[0]),
-                                        int.parse(parts[1]),
-                                        int.parse(parts[2]),
-                                      );
-                                      onDateTap!(dt);
-                                    }
-                                  : null,
-                              borderRadius: BorderRadius.circular(8),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                child: Row(
-                              children: [
-                                Icon(
-                                  present
-                                      ? Icons.check_circle
-                                      : Icons.cancel,
-                                  color: present
-                                      ? SetansTheme.present
-                                      : SetansTheme.absent,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(_formatDate(date)),
-                                const Spacer(),
-                                Text(
-                                  present ? 'Presente' : 'Ausente',
-                                  style: TextStyle(
-                                    color: present
-                                        ? SetansTheme.present
-                                        : SetansTheme.absent,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
+                    else ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_left, size: 32),
+                            onPressed: () => onYearChanged(-1),
                           ),
-                        ),
-                      );
-                    },
+                          Text(
+                            '$currentYear',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_right, size: 32),
+                            onPressed: () => onYearChanged(1),
+                          ),
+                        ],
                       ),
+                      YearCalendar(
+                        year: currentYear,
+                        today: DateTime.now(),
+                        onDayTap: onDateTap,
+                        presentDays: presentDays,
+                        absentDays: absentDays,
+                      ),
+                    ],
                   ],
                 ),
               ),
