@@ -5,14 +5,16 @@ class YearCalendar extends StatelessWidget {
   final int year;
   final DateTime today;
   final void Function(DateTime date)? onDayTap;
-  final Set<DateTime>? highlightedDays;
+  final Set<DateTime>? presentDays;
+  final Set<DateTime>? absentDays;
 
   const YearCalendar({
     super.key,
     required this.year,
     required this.today,
     this.onDayTap,
-    this.highlightedDays,
+    this.presentDays,
+    this.absentDays,
   });
 
   @override
@@ -20,11 +22,11 @@ class YearCalendar extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         int crossAxisCount = 1;
-        if (constraints.maxWidth >= 800) {
+        if (constraints.maxWidth >= 900) {
           crossAxisCount = 4;
-        } else if (constraints.maxWidth >= 600) {
+        } else if (constraints.maxWidth >= 700) {
           crossAxisCount = 3;
-        } else if (constraints.maxWidth >= 400) {
+        } else if (constraints.maxWidth >= 500) {
           crossAxisCount = 2;
         }
 
@@ -34,44 +36,46 @@ class YearCalendar extends StatelessWidget {
           rows.add(List.generate(end - i, (index) => i + index));
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(12),
-          itemCount: rows.length,
-          itemBuilder: (context, rowIndex) {
-            final monthRow = rows[rowIndex];
-
-            int maxWeeksInRow = 0;
-            for (final month in monthRow) {
-              final weeks = _calculateWeeksInMonth(year, month);
-              if (weeks > maxWeeksInRow) maxWeeksInRow = weeks;
-            }
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ...monthRow.map((month) => Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: _MonthCard(
-                            year: year,
-                            month: month,
-                            totalWeeksHeight: maxWeeksInRow,
-                            today: today,
-                            onDayTap: onDayTap,
-                            highlightedDays: highlightedDays,
-                          ),
-                        ),
-                      )),
-                  ...List.generate(
-                    crossAxisCount - monthRow.length,
-                    (_) => const Expanded(child: SizedBox()),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final monthRow in rows)
+              Builder(
+                builder: (context) {
+                  int maxWeeksInRow = 0;
+                  for (final month in monthRow) {
+                    final weeks = _calculateWeeksInMonth(year, month);
+                    if (weeks > maxWeeksInRow) maxWeeksInRow = weeks;
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ...monthRow.map((month) => Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                              child: _MonthCard(
+                                year: year,
+                                month: month,
+                                totalWeeksHeight: maxWeeksInRow,
+                                today: today,
+                                onDayTap: onDayTap,
+                                presentDays: presentDays,
+                                absentDays: absentDays,
+                              ),
+                            ),
+                          )),
+                      ...List.generate(
+                        crossAxisCount - monthRow.length,
+                        (_) => const Expanded(child: SizedBox()),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
+                );
+              },
+                ),
+          ],
         );
       },
     );
@@ -92,7 +96,8 @@ class _MonthCard extends StatelessWidget {
   final int totalWeeksHeight;
   final DateTime today;
   final void Function(DateTime date)? onDayTap;
-  final Set<DateTime>? highlightedDays;
+  final Set<DateTime>? presentDays;
+  final Set<DateTime>? absentDays;
 
   const _MonthCard({
     required this.year,
@@ -100,7 +105,8 @@ class _MonthCard extends StatelessWidget {
     required this.totalWeeksHeight,
     required this.today,
     this.onDayTap,
-    this.highlightedDays,
+    this.presentDays,
+    this.absentDays,
   });
 
   static const _monthNames = [
@@ -168,7 +174,8 @@ class _MonthCard extends StatelessWidget {
                       final isToday = date.year == today.year &&
                           date.month == today.month &&
                           date.day == today.day;
-                      final isHighlighted = highlightedDays?.contains(date) ?? false;
+                      final isPresent = presentDays?.contains(date) ?? false;
+                      final isAbsent = absentDays?.contains(date) ?? false;
 
                       BoxDecoration? decoration;
                       TextStyle textStyle = const TextStyle(fontSize: 13);
@@ -183,13 +190,23 @@ class _MonthCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         );
-                      } else if (isHighlighted) {
+                      } else if (isPresent) {
                         decoration = BoxDecoration(
-                          color: SetansTheme.present.withValues(alpha: 0.3),
+                          color: SetansTheme.presentBg,
                           borderRadius: BorderRadius.circular(6),
                         );
                         textStyle = TextStyle(
                           color: SetansTheme.present,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        );
+                      } else if (isAbsent) {
+                        decoration = BoxDecoration(
+                          color: SetansTheme.absentBg,
+                          borderRadius: BorderRadius.circular(6),
+                        );
+                        textStyle = TextStyle(
+                          color: SetansTheme.absent,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         );
