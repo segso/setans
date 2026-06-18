@@ -62,56 +62,75 @@ class StudentTable extends StatelessWidget {
       );
     }
 
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final vpw = constraints.maxWidth;
+        const approxId = 120.0;
+        final maxNameLen =
+            students.fold<int>(0, (m, s) => s.name.length > m ? s.name.length : m);
+        final approxName = (maxNameLen * 8.5).clamp(80.0, 500.0);
+        final maxMajorLen =
+            students.fold<int>(0, (m, s) => s.major.length > m ? s.major.length : m);
+        final approxMajor = (maxMajorLen * 8.5).clamp(80.0, 300.0);
+        final maxShiftLen =
+            students.fold<int>(0, (m, s) => s.shift.length > m ? s.shift.length : m);
+        final approxShift = (maxShiftLen * 8.5).clamp(50.0, 200.0);
+        const approxDelete = 72.0;
+        final tableWidth =
+            approxId + approxName + approxMajor + approxShift + approxDelete + 32;
+        final fill = vpw > tableWidth;
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: fill
+              ? SizedBox(
+                  width: vpw,
+                  child: _buildDataTable(context, fill),
+                )
+              : _buildDataTable(context, fill),
+        );
+      },
+    );
+  }
+
+  Widget _buildDataTable(BuildContext context, bool fill) {
     return SingleChildScrollView(
       child: DataTable(
         showCheckboxColumn: false,
-        horizontalMargin: 8,
+        horizontalMargin: 10,
         headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
+        columnSpacing: 8,
         columns: [
-          DataColumn(
+          const DataColumn(
             label: Text('Número de control'),
-            columnWidth: MaxColumnWidth(
-              FixedColumnWidth(160),
-              FlexColumnWidth(0.8),
-            ),
+            columnWidth: MaxColumnWidth(IntrinsicColumnWidth(), FixedColumnWidth(160)),
           ),
           DataColumn(
-            label: Text('Nombre'),
-            columnWidth: FlexColumnWidth(3),
+            label: const Text('Nombre'),
+            columnWidth:
+                fill ? const IntrinsicColumnWidth(flex: 1) : const IntrinsicColumnWidth(),
           ),
-          DataColumn(
+          const DataColumn(
             label: Text('Especialidad'),
-            columnWidth: FlexColumnWidth(2),
+            columnWidth: IntrinsicColumnWidth(),
           ),
-          DataColumn(
+          const DataColumn(
             label: Text('Turno'),
-            columnWidth: FlexColumnWidth(1.5),
+            columnWidth: IntrinsicColumnWidth(),
           ),
           const DataColumn(
             label: Text(''),
-            columnWidth: MaxColumnWidth(
-              FixedColumnWidth(80),
-              FlexColumnWidth(0.4),
-            ),
+            columnWidth: FixedColumnWidth(72),
           ),
         ],
         rows: students.map((s) {
           return DataRow(
             onSelectChanged: (_) => onStudentTap(s.id),
             cells: [
-              DataCell(SizedBox(
-                  width: double.infinity,
-                  child: Text(s.id.toString(),
-                      overflow: TextOverflow.ellipsis))),
-              DataCell(SizedBox(
-                  width: double.infinity,
-                  child: Text(s.name, overflow: TextOverflow.ellipsis))),
-              DataCell(SizedBox(
-                  width: double.infinity,
-                  child: Text(s.major, overflow: TextOverflow.ellipsis))),
-              DataCell(SizedBox(
-                  width: double.infinity,
-                  child: Text(s.shift, overflow: TextOverflow.ellipsis))),
+              DataCell(Text(s.id.toString())),
+              DataCell(Text(s.name, overflow: TextOverflow.ellipsis)),
+              DataCell(Text(s.major, overflow: TextOverflow.ellipsis)),
+              DataCell(Text(s.shift, overflow: TextOverflow.ellipsis)),
               DataCell(
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 20),
