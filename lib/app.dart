@@ -23,7 +23,9 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   DateTime? _selectedDate;
   int? _selectedStudentId;
   int? _returnToStudentId;
+  int? _restoredYear;
   final _tutorialManager = TutorialManager();
+  final Map<int, int> _studentYears = {};
 
   void _onMenuItemSelected(MenuItem item) {
     switch (item) {
@@ -42,6 +44,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
           _selectedDate = null;
           _selectedStudentId = null;
           _returnToStudentId = null;
+          _restoredYear = null;
         });
     }
   }
@@ -52,6 +55,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
       _selectedItem = MenuItem.calendar;
       if (_selectedStudentId != null) {
         _returnToStudentId = _selectedStudentId;
+        _restoredYear = _studentYears[_selectedStudentId];
       }
       _selectedStudentId = null;
     });
@@ -62,6 +66,10 @@ class _SetansAppState extends ConsumerState<SetansApp> {
     setState(() {
       if (_returnToStudentId != null) {
         _selectedStudentId = _returnToStudentId;
+        if (_restoredYear != null) {
+          _studentYears[_selectedStudentId!] = _restoredYear!;
+          _restoredYear = null;
+        }
         _returnToStudentId = null;
       }
       _selectedDate = null;
@@ -69,7 +77,10 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   }
 
   void _onStudentTap(int studentId) {
-    setState(() => _selectedStudentId = studentId);
+    setState(() {
+      _selectedStudentId = studentId;
+      _studentYears.remove(studentId);
+    });
   }
 
   void _onBackFromStudent() {
@@ -77,6 +88,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
     setState(() {
       _selectedStudentId = null;
       _returnToStudentId = null;
+      _restoredYear = null;
     });
   }
 
@@ -151,6 +163,13 @@ class _SetansAppState extends ConsumerState<SetansApp> {
           Expanded(
             child: StudentDetailScreen(
               studentId: _selectedStudentId!,
+              currentYear: _studentYears[_selectedStudentId!] ?? DateTime.now().year,
+              onYearChanged: (offset) {
+                setState(() {
+                  _studentYears[_selectedStudentId!] =
+                      (_studentYears[_selectedStudentId!] ?? DateTime.now().year) + offset;
+                });
+              },
               onDateTap: _onDaySelected,
             ),
           ),
