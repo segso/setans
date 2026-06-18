@@ -47,10 +47,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         ),
         Expanded(
-          child: YearCalendar(
-            year: _currentYear,
-            today: now,
-            onDayTap: widget.onDaySelected,
+          child: SingleChildScrollView(
+            child: YearCalendar(
+              year: _currentYear,
+              today: now,
+              onDayTap: widget.onDaySelected,
+            ),
           ),
         ),
       ],
