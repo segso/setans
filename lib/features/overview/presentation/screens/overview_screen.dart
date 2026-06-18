@@ -129,13 +129,13 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     return SingleChildScrollView(
       child: DataTable(
         showCheckboxColumn: false,
-        horizontalMargin: 4,
+        horizontalMargin: 10,
         headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
         columnSpacing: 8,
         columns: [
           const DataColumn(
             label: Text('Número de control'),
-            columnWidth: IntrinsicColumnWidth(),
+            columnWidth: MaxColumnWidth(IntrinsicColumnWidth(), FixedColumnWidth(160)),
           ),
           DataColumn(
             label: const Text('Nombre'),
