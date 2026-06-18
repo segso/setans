@@ -35,17 +35,66 @@ class AssistanceTable extends StatelessWidget {
       );
     }
 
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final vpw = constraints.maxWidth;
+        const approxId = 160.0;
+        final maxNameLen =
+            students.fold<int>(0, (m, s) => s.name.length > m ? s.name.length : m);
+        final approxName = (maxNameLen * 8.5).clamp(80.0, 500.0);
+        final maxMajorLen =
+            students.fold<int>(0, (m, s) => s.major.length > m ? s.major.length : m);
+        final approxMajor = (maxMajorLen * 8.5).clamp(80.0, 300.0);
+        final maxShiftLen =
+            students.fold<int>(0, (m, s) => s.shift.length > m ? s.shift.length : m);
+        final approxShift = (maxShiftLen * 8.5).clamp(50.0, 200.0);
+        const approxSwitch = 80.0;
+        final tableWidth =
+            approxId + approxName + approxMajor + approxShift + approxSwitch + 32;
+        final fill = vpw > tableWidth;
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: fill
+              ? SizedBox(
+                  width: vpw,
+                  child: _buildDataTable(context, fill),
+                )
+              : _buildDataTable(context, fill),
+        );
+      },
+    );
+  }
+
+  Widget _buildDataTable(BuildContext context, bool fill) {
     return SingleChildScrollView(
       child: DataTable(
         showCheckboxColumn: false,
-        horizontalMargin: 8,
+        horizontalMargin: 10,
         headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
-        columns: const [
-          DataColumn(label: Text('Número de control')),
-          DataColumn(label: Text('Nombre')),
-          DataColumn(label: Text('Especialidad')),
-          DataColumn(label: Text('Turno')),
-          DataColumn(label: Text('Presente')),
+        columnSpacing: 8,
+        columns: [
+          const DataColumn(
+            label: Text('Número de control'),
+            columnWidth: MaxColumnWidth(IntrinsicColumnWidth(), FixedColumnWidth(160)),
+          ),
+          DataColumn(
+            label: const Text('Nombre'),
+            columnWidth:
+                fill ? const IntrinsicColumnWidth(flex: 1) : const IntrinsicColumnWidth(),
+          ),
+          const DataColumn(
+            label: Text('Especialidad'),
+            columnWidth: IntrinsicColumnWidth(),
+          ),
+          const DataColumn(
+            label: Text('Turno'),
+            columnWidth: IntrinsicColumnWidth(),
+          ),
+          const DataColumn(
+            label: Text('Presente'),
+            columnWidth: FixedColumnWidth(80),
+          ),
         ],
         rows: students.map((s) {
           final assistance = assistanceMap[s.id];
