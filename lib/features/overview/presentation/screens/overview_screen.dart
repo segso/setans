@@ -99,10 +99,20 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final viewportWidth = constraints.maxWidth;
-        final dateTotal = data.dates.length * 44.0;
+        final currentYear = DateTime.now().year.toString();
+        final dateTotal = data.dates.fold<double>(
+          0,
+          (sum, d) {
+            final parts = d.split('-');
+            final label = parts[0] == currentYear
+                ? '${parts[2]}/${parts[1]}'
+                : '${parts[2]}/${parts[1]}/${parts[0]}';
+            return sum + label.length * 6.5;
+          },
+        );
         final maxNameLen =
             data.students.fold<int>(0, (m, s) => s.name.length > m ? s.name.length : m);
-        const approxId = 120.0;
+        const approxId = 160.0;
         final approxName = (maxNameLen * 8.5).clamp(80.0, 500.0);
         final tableWidth = dateTotal + approxId + approxName + 16;
         final hasExtraSpace = viewportWidth > tableWidth;
@@ -126,6 +136,8 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
   }
 
   Widget _buildDataTable(OverviewData data, bool fill) {
+    final currentYear = DateTime.now().year.toString();
+    final dates = data.dates.reversed.toList();
     return SingleChildScrollView(
       child: DataTable(
         showCheckboxColumn: false,
@@ -142,16 +154,19 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
             columnWidth:
                 fill ? const IntrinsicColumnWidth(flex: 1) : const IntrinsicColumnWidth(),
           ),
-          ...data.dates.map((d) {
+          ...dates.map((d) {
             final parts = d.split('-');
-            final label = '${parts[2]}/${parts[1]}';
+            final year = parts[0];
+            final label = year == currentYear
+                ? '${parts[2]}/${parts[1]}'
+                : '${parts[2]}/${parts[1]}/$year';
             return DataColumn(
               headingRowAlignment: MainAxisAlignment.center,
               label: Text(
                 label,
                 style: const TextStyle(fontSize: 10),
               ),
-              columnWidth: const FixedColumnWidth(44),
+              columnWidth: const IntrinsicColumnWidth(),
             );
           }),
         ],
@@ -166,7 +181,7 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
               DataCell(
                 Text(s.name, overflow: TextOverflow.ellipsis),
               ),
-              ...data.dates.map((d) {
+              ...dates.map((d) {
                 final present = studentData[d] == 1;
                 return DataCell(
                   Align(
