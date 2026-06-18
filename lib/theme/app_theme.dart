@@ -76,7 +76,9 @@ class SetansTheme {
   static Color get surface => _surface;
   static Color get saturdayBg => _saturdayBg;
   static Color get present => const Color(0xFF43A047);
+  static Color get presentBg => const Color(0xFFC8E6C9);
   static Color get absent => const Color(0xFFE53935);
+  static Color get absentBg => const Color(0xFFFFCDD2);
   static Color get onPrimary => Colors.white;
   static Color get onSurface => const Color(0xFF212121);
 }
