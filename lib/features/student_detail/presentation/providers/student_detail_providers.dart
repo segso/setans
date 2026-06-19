@@ -27,3 +27,13 @@ final allDatesProvider = FutureProvider<List<String>>((ref) async {
   final dao = ref.watch(assistancesDaoProvider);
   return dao.getDatesWithRegistries();
 });
+
+class QuickActionStatusNotifier extends Notifier<int?> {
+  @override
+  int? build() => null;
+
+  void setStatus(int? status) => state = status;
+}
+
+final quickActionStatusProvider =
+    NotifierProvider<QuickActionStatusNotifier, int?>(QuickActionStatusNotifier.new);
