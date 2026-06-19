@@ -7,6 +7,7 @@ import '../../../../shared/widgets/year_calendar.dart';
 import '../providers/student_detail_providers.dart';
 import '../../../../theme/app_theme.dart';
 import '../widgets/student_info_card.dart';
+import '../widgets/quick_action_bar.dart';
 
 class StudentDetailScreen extends ConsumerWidget {
   final int studentId;
@@ -38,9 +39,11 @@ class StudentDetailScreen extends ConsumerWidget {
           data: (assistances) => totalDatesAsync.when(
             data: (totalDates) => allDatesAsync.when(
               data: (allDates) {
-                final presents =
-                    assistances.where((a) => a.present == 1).length;
+                final presents = assistances
+                    .where((a) => a.present == 1)
+                    .length;
                 final absents = totalDates - presents;
+                final quickActionStatus = ref.watch(quickActionStatusProvider);
                 return _DetailBody(
                   student: student,
                   assistances: assistances,
@@ -51,24 +54,25 @@ class StudentDetailScreen extends ConsumerWidget {
                   currentYear: currentYear,
                   onYearChanged: onYearChanged,
                   onDateTap: onDateTap,
+                  quickActionStatus: quickActionStatus,
                   onSaved: (name, major, shift) async {
-              final dao = ref.read(studentsDaoProvider);
-              await dao.updateStudent(
-                StudentsCompanion(
-                  id: drift.Value(student.id),
-                  name: drift.Value(name),
-                  major: drift.Value(major),
-                  shift: drift.Value(shift),
-                  createdAt: drift.Value(student.createdAt),
-                ),
-              );
-              ref.read(mutationProvider.notifier).bump();
-            },
-          );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error: $e')),
-          ),
+                    final dao = ref.read(studentsDaoProvider);
+                    await dao.updateStudent(
+                      StudentsCompanion(
+                        id: drift.Value(student.id),
+                        name: drift.Value(name),
+                        major: drift.Value(major),
+                        shift: drift.Value(shift),
+                        createdAt: drift.Value(student.createdAt),
+                      ),
+                    );
+                    ref.read(mutationProvider.notifier).bump();
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+            ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text('Error: $e')),
           ),
@@ -96,23 +100,11 @@ class _StatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _Badge(
-          label: 'Presentes',
-          count: presents,
-          color: SetansTheme.present,
-        ),
+        _Badge(label: 'Presentes', count: presents, color: SetansTheme.present),
         const SizedBox(width: 12),
-        _Badge(
-          label: 'Faltas',
-          count: absents,
-          color: SetansTheme.absent,
-        ),
+        _Badge(label: 'Faltas', count: absents, color: SetansTheme.absent),
         const SizedBox(width: 12),
-        _Badge(
-          label: 'Total',
-          count: total,
-          color: SetansTheme.primary,
-        ),
+        _Badge(label: 'Total', count: total, color: SetansTheme.primary),
       ],
     );
   }
@@ -122,11 +114,7 @@ class _Badge extends StatelessWidget {
   final String label;
   final int count;
   final Color color;
-  const _Badge({
-    required this.label,
-    required this.count,
-    required this.color,
-  });
+  const _Badge({required this.label, required this.count, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -148,13 +136,7 @@ class _Badge extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 13,
-            ),
-          ),
+          Text(label, style: TextStyle(color: color, fontSize: 13)),
         ],
       ),
     );
@@ -169,6 +151,7 @@ class _DetailBody extends StatelessWidget {
   final int absents;
   final int totalDates;
   final int currentYear;
+  final int? quickActionStatus;
   final void Function(int offset) onYearChanged;
   final Future<void> Function(String name, String major, String shift) onSaved;
   final void Function(DateTime date)? onDateTap;
@@ -182,19 +165,23 @@ class _DetailBody extends StatelessWidget {
     required this.totalDates,
     required this.currentYear,
     required this.onYearChanged,
+    this.quickActionStatus,
     required this.onSaved,
     this.onDateTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final presentDays = assistances
-        .where((a) => a.present == 1)
-        .map((a) {
-          final parts = a.date.split('-');
-          return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
-        })
-        .toSet();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final presentDays = assistances.where((a) => a.present == 1).map((a) {
+      final parts = a.date.split('-');
+      return DateTime(
+        int.parse(parts[0]),
+        int.parse(parts[1]),
+        int.parse(parts[2]),
+      );
+    }).toSet();
 
     final absentDays = allDates
         .where((d) {
@@ -203,9 +190,21 @@ class _DetailBody extends StatelessWidget {
         })
         .map((d) {
           final parts = d.split('-');
-          return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+          return DateTime(
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+            int.parse(parts[2]),
+          );
         })
         .toSet();
+
+    if (quickActionStatus == 1) {
+      presentDays.add(today);
+      absentDays.remove(today);
+    } else if (quickActionStatus == 0) {
+      absentDays.add(today);
+      presentDays.remove(today);
+    }
 
     return SingleChildScrollView(
       child: Column(
@@ -218,6 +217,12 @@ class _DetailBody extends StatelessWidget {
             onSaved: onSaved,
           ),
           Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: QuickActionBar(
+              studentId: student.id,
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Card(
               child: Padding(
@@ -227,10 +232,9 @@ class _DetailBody extends StatelessWidget {
                   children: [
                     Text(
                       'Historial de asistencias',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (allDates.isNotEmpty) ...[
                       const SizedBox(height: 12),
@@ -253,9 +257,7 @@ class _DetailBody extends StatelessWidget {
                           ),
                           Text(
                             '$currentYear',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineMedium
+                            style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           IconButton(
@@ -266,7 +268,7 @@ class _DetailBody extends StatelessWidget {
                       ),
                       YearCalendar(
                         year: currentYear,
-                        today: DateTime.now(),
+                        today: today,
                         onDayTap: onDateTap,
                         presentDays: presentDays,
                         absentDays: absentDays,
