@@ -180,7 +180,27 @@ class _MonthCard extends StatelessWidget {
                       BoxDecoration? decoration;
                       TextStyle textStyle = const TextStyle(fontSize: 13);
 
-                      if (isToday) {
+                      if (isToday && isPresent) {
+                        decoration = BoxDecoration(
+                          color: SetansTheme.present,
+                          shape: BoxShape.circle,
+                        );
+                        textStyle = const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        );
+                      } else if (isToday && isAbsent) {
+                        decoration = BoxDecoration(
+                          color: SetansTheme.absent,
+                          shape: BoxShape.circle,
+                        );
+                        textStyle = const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        );
+                      } else if (isToday) {
                         decoration = BoxDecoration(
                           color: SetansTheme.primary,
                           shape: BoxShape.circle,
