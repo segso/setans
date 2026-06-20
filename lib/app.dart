@@ -26,13 +26,73 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   int? _returnToStudentId;
   int? _restoredYear;
   MenuItem? _previousMenuItem;
-  final _tutorialManager = TutorialManager();
+  late final TutorialManager _tutorialManager;
   final Map<int, int> _studentYears = {};
+  bool _tutorialRunning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tutorialManager = TutorialManager();
+    _tutorialManager.onNavigate = _navigateForTutorial;
+    _tutorialManager.showcaseView.addOnFinishCallback(_onTutorialEnded);
+    _tutorialManager.showcaseView.addOnDismissCallback((_) => _onTutorialEnded());
+  }
+
+  void _onTutorialEnded() {
+    if (mounted) {
+      setState(() {
+        _tutorialRunning = false;
+        _selectedItem = MenuItem.calendar;
+        _selectedDate = null;
+        _selectedStudentId = null;
+        _returnToStudentId = null;
+        _restoredYear = null;
+        _previousMenuItem = null;
+      });
+    }
+  }
+
+  Future<void> _navigateForTutorial(TutorialNavigation action) async {
+    switch (action) {
+      case TutorialNavigation.showCalendar:
+        _onMenuItemSelected(MenuItem.calendar);
+      case TutorialNavigation.showRegister:
+        _onMenuItemSelected(MenuItem.register);
+      case TutorialNavigation.showOverview:
+        _onMenuItemSelected(MenuItem.overview);
+      case TutorialNavigation.showDayForDate:
+        _onDaySelected(DateTime.now());
+      case TutorialNavigation.showStudentDetail:
+        ref.read(quickActionStatusProvider.notifier).setStatus(null);
+        ref.read(mutationProvider.notifier).bump();
+        final dao = ref.read(studentsDaoProvider);
+        final students = await dao.getAll();
+        if (students.isEmpty) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Registra al menos un estudiante para ver esta sección.',
+              ),
+            ),
+          );
+          _tutorialManager.showcaseView.dismiss();
+          return;
+        }
+        _onStudentTap(students.first.id);
+    }
+    await Future.delayed(const Duration(milliseconds: 100));
+  }
 
   void _onMenuItemSelected(MenuItem item) {
     switch (item) {
       case MenuItem.tutorial:
-        _tutorialManager.startTutorial(context);
+        _onMenuItemSelected(MenuItem.calendar);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _tutorialManager.startTutorial();
+          setState(() => _tutorialRunning = true);
+        });
         return;
       case MenuItem.about:
         showDialog(
@@ -144,15 +204,49 @@ class _SetansAppState extends ConsumerState<SetansApp> {
       title: 'Setans',
       debugShowCheckedModeBanner: false,
       theme: SetansTheme.light,
-      home: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: AppMenubar(
-            selected: _selectedItem,
-            onItemSelected: _onMenuItemSelected,
+      home: TutorialManager.wrapCalendarStep(
+        child: TutorialManager.wrapRegisterStep(
+          child: TutorialManager.wrapDayAssistanceStep(
+            child: TutorialManager.wrapOverviewStep(
+              child: TutorialManager.wrapStudentDetailStep(
+                child: _tutorialRunning
+                    ? Stack(
+                        children: [
+                          AbsorbPointer(
+                            absorbing: true,
+                            child: Scaffold(
+                              appBar: PreferredSize(
+                                preferredSize: const Size.fromHeight(48),
+                                child: AppMenubar(
+                                  selected: _selectedItem,
+                                  onItemSelected: _onMenuItemSelected,
+                                ),
+                              ),
+                              body: _buildBody(),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: GestureDetector(
+                              onTap: TutorialManager.handleBarrierClick,
+                              child: Container(color: Colors.black45),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Scaffold(
+                        appBar: PreferredSize(
+                          preferredSize: const Size.fromHeight(48),
+                          child: AppMenubar(
+                            selected: _selectedItem,
+                            onItemSelected: _onMenuItemSelected,
+                          ),
+                        ),
+                        body: _buildBody(),
+                      ),
+              ),
+            ),
           ),
         ),
-        body: _buildBody(),
       ),
     );
   }
