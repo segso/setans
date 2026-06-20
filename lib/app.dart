@@ -7,6 +7,7 @@ import 'features/register/presentation/screens/register_screen.dart';
 import 'shared/providers/shared_providers.dart';
 import 'features/assistance/presentation/screens/day_assistance_screen.dart';
 import 'features/student_detail/presentation/screens/student_detail_screen.dart';
+import 'features/student_detail/presentation/providers/student_detail_providers.dart';
 import 'features/overview/presentation/screens/overview_screen.dart';
 import 'features/tutorial/presentation/widgets/tutorial_manager.dart';
 import 'features/about/presentation/widgets/about_dialog.dart';
@@ -39,6 +40,8 @@ class _SetansAppState extends ConsumerState<SetansApp> {
         );
         return;
       default:
+        ref.read(quickActionStatusProvider.notifier).setStatus(null);
+        ref.read(mutationProvider.notifier).bump();
         setState(() {
           _selectedItem = item;
           _selectedDate = null;
@@ -50,6 +53,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   }
 
   void _onDaySelected(DateTime date) {
+    ref.read(mutationProvider.notifier).bump();
     setState(() {
       _selectedDate = date;
       _selectedItem = MenuItem.calendar;
@@ -77,6 +81,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   }
 
   void _onStudentTap(int studentId) {
+    ref.read(mutationProvider.notifier).bump();
     setState(() {
       _selectedStudentId = studentId;
       _studentYears.remove(studentId);
@@ -84,6 +89,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   }
 
   void _onBackFromStudent() {
+    ref.read(quickActionStatusProvider.notifier).setStatus(null);
     ref.read(mutationProvider.notifier).bump();
     setState(() {
       _selectedStudentId = null;
@@ -121,6 +127,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
     if (confirmed == true && context.mounted) {
       final dao = ref.read(assistancesDaoProvider);
       await dao.deleteByDate(dateStr);
+      ref.read(quickActionStatusProvider.notifier).setStatus(null);
       ref.read(mutationProvider.notifier).bump();
     }
   }
