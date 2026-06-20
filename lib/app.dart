@@ -25,6 +25,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   int? _selectedStudentId;
   int? _returnToStudentId;
   int? _restoredYear;
+  MenuItem? _previousMenuItem;
   final _tutorialManager = TutorialManager();
   final Map<int, int> _studentYears = {};
 
@@ -48,6 +49,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
           _selectedStudentId = null;
           _returnToStudentId = null;
           _restoredYear = null;
+          _previousMenuItem = null;
         });
     }
   }
@@ -56,6 +58,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
     ref.read(mutationProvider.notifier).bump();
     setState(() {
       _selectedDate = date;
+      _previousMenuItem = _selectedItem;
       _selectedItem = MenuItem.calendar;
       if (_selectedStudentId != null) {
         _returnToStudentId = _selectedStudentId;
@@ -75,6 +78,9 @@ class _SetansAppState extends ConsumerState<SetansApp> {
           _restoredYear = null;
         }
         _returnToStudentId = null;
+      } else if (_previousMenuItem != null) {
+        _selectedItem = _previousMenuItem!;
+        _previousMenuItem = null;
       }
       _selectedDate = null;
     });
@@ -194,8 +200,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
                 TextButton.icon(
                   onPressed: _onBackToCalendar,
                   icon: const Icon(Icons.arrow_back),
-                  label: Text(
-                      _returnToStudentId != null ? 'Volver' : 'Calendario'),
+                  label: const Text('Volver'),
                 ),
                 const Spacer(),
                 Text(
@@ -233,7 +238,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
       case MenuItem.register:
         return RegisterScreen(onStudentTap: _onStudentTap);
       case MenuItem.overview:
-        return OverviewScreen(onStudentTap: _onStudentTap);
+        return OverviewScreen(onStudentTap: _onStudentTap, onDateTap: _onDaySelected);
       case MenuItem.tutorial:
       case MenuItem.about:
         return CalendarScreen(onDaySelected: _onDaySelected);
