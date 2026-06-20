@@ -293,8 +293,9 @@ class TutorialManager {
 
   static Widget buildTooltipContent(
     String title,
-    List<InlineSpan> descriptionSpans,
-  ) {
+    List<InlineSpan> descriptionSpans, {
+    IconData icon = Icons.touch_app,
+  }) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
       decoration: BoxDecoration(
@@ -317,7 +318,7 @@ class TutorialManager {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Icon(Icons.touch_app, size: 20, color: Color(0xFF1565C0)),
+                child: Icon(icon, size: 20, color: Color(0xFF1565C0)),
               ),
               const SizedBox(width: 8),
               Flexible(
@@ -367,6 +368,7 @@ class TutorialManager {
           const TextSpan(text: 'ubicadas en la parte superior\n'
               '• Cliquea un día para ver y modificar las asistencias de ese día'),
         ],
+        icon: Icons.calendar_month,
       ),
       tooltipActions: _skipNextActions(),
       onBarrierClick: handleBarrierClick,
@@ -393,6 +395,7 @@ class TutorialManager {
           _iconSpan(Icons.delete_outline, color: Color(0xFFC62828)),
           const TextSpan(text: ' para borrar un estudiante'),
         ],
+        icon: Icons.people,
       ),
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
@@ -420,6 +423,7 @@ class TutorialManager {
           const TextSpan(text: ' en la parte superior para borrar todos '
               'los registros de este día'),
         ],
+        icon: Icons.checklist,
       ),
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
@@ -452,6 +456,7 @@ class TutorialManager {
           _iconSpan(Icons.file_download),
           const TextSpan(text: ' Exportar CSV" para exportar la tabla como archivo'),
         ],
+        icon: Icons.table_chart,
       ),
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
@@ -476,6 +481,7 @@ class TutorialManager {
               'registrar rápidamente la asistencia del día actual\n'
               '• Los conteos de presentes, ausencias y total se muestran al inicio del historial'),
         ],
+        icon: Icons.person,
       ),
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
