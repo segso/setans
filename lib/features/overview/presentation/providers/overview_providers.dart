@@ -86,6 +86,21 @@ final overviewSearchProvider = NotifierProvider<OverviewSearchNotifier, String>(
   OverviewSearchNotifier.new,
 );
 
+class OverviewOverrideNotifier extends Notifier<Map<String, int>> {
+  @override
+  Map<String, int> build() => {};
+
+  void setOverride(int studentId, String date, int present) {
+    state = {...state, '$studentId|$date': present};
+  }
+
+  void clear() => state = {};
+}
+
+final overviewOverrideProvider =
+    NotifierProvider<OverviewOverrideNotifier, Map<String, int>>(
+        OverviewOverrideNotifier.new);
+
 class OverviewSearchNotifier extends Notifier<String> {
   @override
   String build() => '';
