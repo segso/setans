@@ -29,8 +29,10 @@ class _DayAssistanceScreenState extends ConsumerState<DayAssistanceScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-        () => ref.read(assistanceSearchProvider.notifier).update(''));
+    Future.microtask(() {
+      ref.read(assistanceSearchProvider.notifier).update('');
+      ref.read(dayAssistanceOverrideProvider.notifier).clear();
+    });
   }
 
   Future<void> _toggle(int studentId) async {
@@ -38,18 +40,20 @@ class _DayAssistanceScreenState extends ConsumerState<DayAssistanceScreen> {
     final existing = await dao.getByDate(_dateStr);
     final current =
         existing.where((a) => a.studentId == studentId).firstOrNull;
+    final newPresent = current?.present == 1 ? 0 : 1;
     await dao.upsert(AssistancesCompanion(
       studentId: Value(studentId),
       date: Value(_dateStr),
-      present: Value(current?.present == 1 ? 0 : 1),
+      present: Value(newPresent),
     ));
-    ref.read(mutationProvider.notifier).bump();
+    ref.read(dayAssistanceOverrideProvider.notifier).setOverride(studentId, newPresent);
   }
 
   @override
   Widget build(BuildContext context) {
     final studentsAsync = ref.watch(filteredDayStudentsProvider);
     final assistanceAsync = ref.watch(dayAssistanceProvider(widget.date));
+    final overrideMap = ref.watch(dayAssistanceOverrideProvider);
 
     final searchNotifier = ref.read(assistanceSearchProvider.notifier);
 
@@ -65,12 +69,23 @@ class _DayAssistanceScreenState extends ConsumerState<DayAssistanceScreen> {
         Expanded(
           child: studentsAsync.when(
             data: (students) => assistanceAsync.when(
-              data: (assistanceMap) => AssistanceTable(
-                students: students,
-                assistanceMap: assistanceMap,
-                onToggle: _toggle,
-                onStudentTap: widget.onStudentTap,
-              ),
+              data: (assistanceMap) {
+                final mergedMap = <int, Assistance>{};
+                mergedMap.addAll(assistanceMap);
+                for (final entry in overrideMap.entries) {
+                  mergedMap[entry.key] = Assistance(
+                    studentId: entry.key,
+                    date: _dateStr,
+                    present: entry.value,
+                  );
+                }
+                return AssistanceTable(
+                  students: students,
+                  assistanceMap: mergedMap,
+                  onToggle: _toggle,
+                  onStudentTap: widget.onStudentTap,
+                );
+              },
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Error: $e')),

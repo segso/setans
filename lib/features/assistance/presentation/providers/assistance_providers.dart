@@ -13,6 +13,21 @@ final assistanceSearchProvider =
     NotifierProvider<AssistanceSearchNotifier, String>(
         AssistanceSearchNotifier.new);
 
+class DayAssistanceOverrideNotifier extends Notifier<Map<int, int>> {
+  @override
+  Map<int, int> build() => {};
+
+  void setOverride(int studentId, int present) {
+    state = {...state, studentId: present};
+  }
+
+  void clear() => state = {};
+}
+
+final dayAssistanceOverrideProvider =
+    NotifierProvider<DayAssistanceOverrideNotifier, Map<int, int>>(
+        DayAssistanceOverrideNotifier.new);
+
 final filteredDayStudentsProvider = FutureProvider<List<Student>>((ref) async {
   ref.watch(mutationProvider);
   final dao = ref.watch(studentsDaoProvider);
