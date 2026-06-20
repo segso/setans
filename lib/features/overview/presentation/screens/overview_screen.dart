@@ -22,6 +22,7 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
   final ScrollController _horizontalScrollController = ScrollController();
   Timer? _timer;
   int? _hoveredColumnIndex;
+  ScaffoldMessengerState? _scaffoldMessenger;
 
   @override
   void initState() {
@@ -32,8 +33,11 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     });
   }
 
-  Future<void> _toggle(int studentId, String dateStr) async {
+  Future<void> _toggleWithUndo(BuildContext context, int studentId, String dateStr, String studentName, bool isCurrentlyPresent) async {
+    final label = isCurrentlyPresent ? 'ausente' : 'presente';
+
     final dao = ref.read(assistancesDaoProvider);
+    final overrideNotifier = ref.read(overviewOverrideProvider.notifier);
     final existing = await dao.getByDate(dateStr);
     final current = existing.where((a) => a.studentId == studentId).firstOrNull;
     final newPresent = current?.present == 1 ? 0 : 1;
@@ -42,16 +46,11 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
       date: Value(dateStr),
       present: Value(newPresent),
     ));
-    ref.read(overviewOverrideProvider.notifier).setOverride(studentId, dateStr, newPresent);
-  }
-
-  Future<void> _toggleWithUndo(BuildContext context, int studentId, String dateStr, String studentName, bool isCurrentlyPresent) async {
-    final label = isCurrentlyPresent ? 'ausente' : 'presente';
-
-    await _toggle(studentId, dateStr);
+    overrideNotifier.setOverride(studentId, dateStr, newPresent);
 
     if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
+    _scaffoldMessenger = messenger;
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
@@ -61,21 +60,27 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
           label: 'Deshacer',
           onPressed: () {
             _timer?.cancel();
-            messenger.hideCurrentSnackBar();
-            _toggle(studentId, dateStr);
+            _scaffoldMessenger?.hideCurrentSnackBar();
+            dao.upsert(AssistancesCompanion(
+              studentId: Value(studentId),
+              date: Value(dateStr),
+              present: Value(isCurrentlyPresent ? 1 : 0),
+            ));
+            overrideNotifier.setOverride(studentId, dateStr, isCurrentlyPresent ? 1 : 0);
           },
         ),
       ),
     );
     _timer?.cancel();
     _timer = Timer(const Duration(seconds: 10), () {
-      if (context.mounted) messenger.hideCurrentSnackBar();
+      _scaffoldMessenger?.hideCurrentSnackBar();
     });
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _scaffoldMessenger?.hideCurrentSnackBar();
     _horizontalScrollController.dispose();
     super.dispose();
   }
