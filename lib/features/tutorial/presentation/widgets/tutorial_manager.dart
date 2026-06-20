@@ -252,33 +252,24 @@ class TutorialManager {
     final prevNav = prevStep.navigation;
 
     if (prevNav != null && onNavigate != null) {
-      onNavigate!(prevNav).then((_) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          _showcaseView.previous();
-          _isAdvancing = false;
-        });
-      });
-    } else {
-      _showcaseView.previous();
-      _isAdvancing = false;
+      onNavigate!(prevNav);
     }
+
+    _showcaseView.previous();
+    _isAdvancing = false;
   }
 
   void _advanceTo(int stepIndex) {
     final step = _steps[stepIndex];
     final nav = step.navigation;
 
+    _showcaseView.next(force: true);
+
     if (nav != null && onNavigate != null) {
-      onNavigate!(nav).then((_) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          _showcaseView.next(force: true);
-          _isAdvancing = false;
-        });
-      });
-    } else {
-      _showcaseView.next(force: true);
-      _isAdvancing = false;
+      onNavigate!(nav);
     }
+
+    _isAdvancing = false;
   }
 
   static InlineSpan _iconSpan(IconData icon, {Color? color, double size = 16}) {
@@ -371,6 +362,7 @@ class TutorialManager {
         icon: Icons.calendar_month,
       ),
       tooltipActions: _skipNextActions(),
+      disableMovingAnimation: true,
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
       disposeOnTap: false,
@@ -397,6 +389,7 @@ class TutorialManager {
         ],
         icon: Icons.people,
       ),
+      disableMovingAnimation: true,
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
       disposeOnTap: false,
@@ -425,6 +418,7 @@ class TutorialManager {
         ],
         icon: Icons.checklist,
       ),
+      disableMovingAnimation: true,
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
       disposeOnTap: false,
@@ -458,6 +452,7 @@ class TutorialManager {
         ],
         icon: Icons.table_chart,
       ),
+      disableMovingAnimation: true,
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
       disposeOnTap: false,
@@ -483,6 +478,7 @@ class TutorialManager {
         ],
         icon: Icons.person,
       ),
+      disableMovingAnimation: true,
       onBarrierClick: handleBarrierClick,
       onTargetClick: handleBarrierClick,
       disposeOnTap: false,
