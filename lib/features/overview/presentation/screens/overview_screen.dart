@@ -188,7 +188,9 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
   }
 
   Widget _buildDataTable(OverviewData data, Map<String, int> overrideMap, bool fill) {
-    final currentYear = DateTime.now().year.toString();
+    final now = DateTime.now();
+    final currentYear = now.year.toString();
+    final today = DateTime(now.year, now.month, now.day);
     final dates = data.dates.reversed.toList();
     return SingleChildScrollView(
       child: DataTable(
@@ -216,6 +218,7 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
               int.parse(parts[1]),
               int.parse(parts[2]),
             );
+            final isToday = date == today;
             final isHovered = _hoveredColumnIndex == colIdx;
             final label = year == currentYear
                 ? '${parts[2]}/${parts[1]}'
@@ -233,7 +236,9 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
                     decoration: BoxDecoration(
                       color: isHovered
                           ? SetansTheme.primary.withValues(alpha: 0.12)
-                          : Colors.transparent,
+                          : isToday
+                              ? SetansTheme.primary.withValues(alpha: 0.08)
+                              : Colors.transparent,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
@@ -242,8 +247,10 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
                       label,
                       style: TextStyle(
                         fontSize: 10,
-                        fontWeight: isHovered ? FontWeight.bold : FontWeight.normal,
-                        color: isHovered ? SetansTheme.primary : null,
+                        fontWeight: isHovered || isToday
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isHovered || isToday ? SetansTheme.primary : null,
                       ),
                     ),
                   ),
