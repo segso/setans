@@ -206,14 +206,26 @@ class _DetailBody extends StatelessWidget {
       presentDays.remove(today);
     }
 
+    final todayStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayRecordInDb = assistances.where((a) => a.date == todayStr).firstOrNull;
+    final isTodayPresentInDb = todayRecordInDb?.present == 1;
+
+    int adjustedPresents = presents;
+    int adjustedAbsents = absents;
+    if (quickActionStatus == 1 && !isTodayPresentInDb) {
+      adjustedPresents += 1;
+      adjustedAbsents -= 1;
+    } else if (quickActionStatus == 0 && isTodayPresentInDb) {
+      adjustedPresents -= 1;
+      adjustedAbsents += 1;
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
           StudentInfoCard(
             student: student,
-            presents: presents,
-            absents: absents,
-            total: totalDates,
             onSaved: onSaved,
           ),
           Padding(
@@ -239,8 +251,8 @@ class _DetailBody extends StatelessWidget {
                     if (allDates.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       _StatsRow(
-                        presents: presents,
-                        absents: absents,
+                        presents: adjustedPresents,
+                        absents: adjustedAbsents,
                         total: totalDates,
                       ),
                     ],

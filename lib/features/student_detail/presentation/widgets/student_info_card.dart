@@ -4,17 +4,11 @@ import '../../../../theme/app_theme.dart';
 
 class StudentInfoCard extends StatefulWidget {
   final Student student;
-  final int presents;
-  final int absents;
-  final int total;
   final Future<void> Function(String name, String major, String shift) onSaved;
 
   const StudentInfoCard({
     super.key,
     required this.student,
-    required this.presents,
-    required this.absents,
-    required this.total,
     required this.onSaved,
   });
 
@@ -99,28 +93,6 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
             ),
             const Divider(),
             if (_editing) _buildEditMode() else _buildViewMode(s),
-            const Divider(),
-            Row(
-              children: [
-                _StatBadge(
-                  label: 'Asistencias',
-                  count: widget.presents,
-                  color: SetansTheme.present,
-                ),
-                const SizedBox(width: 16),
-                _StatBadge(
-                  label: 'Faltas',
-                  count: widget.absents,
-                  color: SetansTheme.absent,
-                ),
-                const SizedBox(width: 16),
-                _StatBadge(
-                  label: 'Total',
-                  count: widget.total,
-                  color: SetansTheme.primary,
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -208,39 +180,4 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _StatBadge extends StatelessWidget {
-  final String label;
-  final int count;
-  final Color color;
 
-  const _StatBadge({
-    required this.label,
-    required this.count,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          Text(label, style: TextStyle(fontSize: 12, color: color)),
-        ],
-      ),
-    );
-  }
-}
