@@ -200,6 +200,16 @@ class _MonthCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         );
+                      } else if (isToday && isSaturday) {
+                        decoration = BoxDecoration(
+                          color: SetansTheme.primary,
+                          borderRadius: BorderRadius.circular(6),
+                        );
+                        textStyle = const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        );
                       } else if (isToday) {
                         decoration = BoxDecoration(
                           color: SetansTheme.primary,
@@ -245,7 +255,7 @@ class _MonthCard extends StatelessWidget {
                       return Expanded(
                         child: InkWell(
                           onTap: onDayTap != null ? () => onDayTap!(date) : null,
-                          borderRadius: isToday ? null : BorderRadius.circular(6),
+                          borderRadius: isToday && !isSaturday ? null : BorderRadius.circular(6),
                           child: Container(
                             height: 32,
                             alignment: Alignment.center,
