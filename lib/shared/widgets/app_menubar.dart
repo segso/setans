@@ -107,7 +107,7 @@ class _MenuButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
-          onTap: item == MenuItem.about ? null : onTap,
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(

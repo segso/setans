@@ -20,6 +20,7 @@ class SetansApp extends ConsumerStatefulWidget {
 }
 
 class _SetansAppState extends ConsumerState<SetansApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
   MenuItem _selectedItem = MenuItem.calendar;
   DateTime? _selectedDate;
   int? _selectedStudentId;
@@ -96,7 +97,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
         return;
       case MenuItem.about:
         showDialog(
-          context: context,
+          context: _navigatorKey.currentContext!,
           builder: (_) => const AboutDialogWidget(),
         );
         return;
@@ -201,6 +202,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Setans',
       debugShowCheckedModeBanner: false,
       theme: SetansTheme.light,
