@@ -6,12 +6,12 @@ import '../../../../shared/providers/shared_providers.dart';
 import '../../../../theme/app_theme.dart';
 
 const _majors = [
+  'Contabilidad',
+  'Inteligencia artificial',
   'Laboratorista químico',
+  'Mecánica industrial',
   'Mecatrónica',
   'Programación',
-  'Mecánica industrial',
-  'Inteligencia artificial',
-  'Contabilidad',
 ];
 
 const _shifts = ['Matutino', 'Vespertino'];
@@ -97,13 +97,14 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               TextFormField(
                 controller: _idController,
                 decoration: const InputDecoration(
@@ -171,7 +172,8 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                   ),
                 ],
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

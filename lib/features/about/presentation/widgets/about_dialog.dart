@@ -36,11 +36,14 @@ class AboutDialogWidget extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: Colors.grey.shade600),
               const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: SetansTheme.primary,
-                  decoration: TextDecoration.underline,
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: SetansTheme.primary,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ],
@@ -58,15 +61,18 @@ class AboutDialogWidget extends StatelessWidget {
         children: [
           Icon(Icons.info_outline, color: SetansTheme.primary),
           const SizedBox(width: 8),
-          const Text('Acerca de Setans'),
+          const Flexible(
+            child: Text('Acerca de Setans', overflow: TextOverflow.ellipsis),
+          ),
         ],
       ),
       content: SizedBox(
         width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Center(
               child: Column(
                 children: [
@@ -137,6 +143,7 @@ class AboutDialogWidget extends StatelessWidget {
             Divider(color: Colors.grey.shade400, height: 1),
           ],
         ),
+      ),
       ),
       actions: [
         TextButton(

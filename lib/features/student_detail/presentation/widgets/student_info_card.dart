@@ -24,12 +24,12 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
   bool _saving = false;
 
   static const _majors = [
+    'Contabilidad',
+    'Inteligencia artificial',
     'Laboratorista químico',
+    'Mecánica industrial',
     'Mecatrónica',
     'Programación',
-    'Mecánica industrial',
-    'Inteligencia artificial',
-    'Contabilidad',
   ];
 
   static const _shifts = ['Matutino', 'Vespertino'];
@@ -78,13 +78,15 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
               children: [
                 Icon(Icons.person, size: 32, color: SetansTheme.primary),
                 const SizedBox(width: 8),
-                Text(
-                  'Estudiante: ${s.id}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Estudiante: ${s.id}',
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
                 ),
-                const Spacer(),
                 IconButton(
                   icon: Icon(_editing ? Icons.close : Icons.edit),
                   onPressed: () => setState(() => _editing = !_editing),
@@ -165,15 +167,22 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labelWidth = MediaQuery.of(context).size.width < 500 ? 90.0 : 120.0;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           SizedBox(
-            width: 120,
+            width: labelWidth,
             child: Text(label, style: const TextStyle(color: Colors.grey)),
           ),
-          Expanded(child: Text(value, style: const TextStyle(fontSize: 16))),
+          Expanded(
+            child: Text(
+              value,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
         ],
       ),
     );
