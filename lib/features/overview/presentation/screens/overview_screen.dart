@@ -20,6 +20,7 @@ class OverviewScreen extends ConsumerStatefulWidget {
 
 class _OverviewScreenState extends ConsumerState<OverviewScreen> {
   final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
   Timer? _timer;
   int? _hoveredColumnIndex;
   ScaffoldMessengerState? _scaffoldMessenger;
@@ -82,6 +83,7 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     _timer?.cancel();
     _scaffoldMessenger?.hideCurrentSnackBar();
     _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
     super.dispose();
   }
 
@@ -177,15 +179,25 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
         return Scrollbar(
           controller: _horizontalScrollController,
           thumbVisibility: true,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            controller: _horizontalScrollController,
-            child: hasExtraSpace
-                ? SizedBox(
-                    width: viewportWidth,
-                    child: _buildDataTable(data, overrideMap, true),
-                  )
-                : _buildDataTable(data, overrideMap, false),
+          notificationPredicate: (notification) =>
+              notification.depth == 1 && notification.metrics.axis == Axis.horizontal,
+          child: Scrollbar(
+            controller: _verticalScrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              controller: _verticalScrollController,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                controller: _horizontalScrollController,
+                child: hasExtraSpace
+                    ? SizedBox(
+                        width: viewportWidth,
+                        child: _buildDataTable(data, overrideMap, true),
+                      )
+                    : _buildDataTable(data, overrideMap, false),
+              ),
+            ),
           ),
         );
       },
@@ -197,8 +209,7 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     final currentYear = now.year.toString();
     final today = DateTime(now.year, now.month, now.day);
     final dates = data.dates.reversed.toList();
-    return SingleChildScrollView(
-      child: DataTable(
+    return DataTable(
         showCheckboxColumn: false,
         horizontalMargin: 10,
         headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
@@ -299,7 +310,6 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
             ],
           );
         }).toList(),
-      ),
     );
   }
 }

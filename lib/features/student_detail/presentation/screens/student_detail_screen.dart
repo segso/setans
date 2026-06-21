@@ -86,7 +86,7 @@ class StudentDetailScreen extends ConsumerWidget {
   }
 }
 
-class _StatsRow extends StatelessWidget {
+class _StatsRow extends StatefulWidget {
   final int presents;
   final int absents;
   final int total;
@@ -97,15 +97,36 @@ class _StatsRow extends StatelessWidget {
   });
 
   @override
+  State<_StatsRow> createState() => _StatsRowState();
+}
+
+class _StatsRowState extends State<_StatsRow> {
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _Badge(label: 'Presentes', count: presents, color: SetansTheme.present),
-        const SizedBox(width: 12),
-        _Badge(label: 'Faltas', count: absents, color: SetansTheme.absent),
-        const SizedBox(width: 12),
-        _Badge(label: 'Total', count: total, color: SetansTheme.primary),
-      ],
+    return Scrollbar(
+      controller: _controller,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        controller: _controller,
+        child: Row(
+          children: [
+            _Badge(label: 'Presentes', count: widget.presents, color: SetansTheme.present),
+            const SizedBox(width: 12),
+            _Badge(label: 'Faltas', count: widget.absents, color: SetansTheme.absent),
+            const SizedBox(width: 12),
+            _Badge(label: 'Total', count: widget.total, color: SetansTheme.primary),
+          ],
+        ),
+      ),
     );
   }
 }

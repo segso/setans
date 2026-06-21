@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../theme/app_theme.dart';
 
-class StudentTable extends StatelessWidget {
+class StudentTable extends StatefulWidget {
   final List<Student> students;
   final void Function(int studentId) onStudentTap;
   final Future<void> Function(int studentId) onDeleteStudent;
@@ -13,6 +13,21 @@ class StudentTable extends StatelessWidget {
     required this.onStudentTap,
     required this.onDeleteStudent,
   });
+
+  @override
+  State<StudentTable> createState() => _StudentTableState();
+}
+
+class _StudentTableState extends State<StudentTable> {
+  final ScrollController _controller = ScrollController();
+  final ScrollController _verticalController = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _verticalController.dispose();
+    super.dispose();
+  }
 
   Future<void> _confirmDelete(BuildContext context, Student s) async {
     final confirmed = await showDialog<bool>(
@@ -40,13 +55,14 @@ class StudentTable extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      await onDeleteStudent(s.id);
+      await widget.onDeleteStudent(s.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (students.isEmpty) {
+    final s = widget.students;
+    if (s.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -67,82 +83,94 @@ class StudentTable extends StatelessWidget {
         final vpw = constraints.maxWidth;
         const approxId = 120.0;
         final maxNameLen =
-            students.fold<int>(0, (m, s) => s.name.length > m ? s.name.length : m);
+            s.fold<int>(0, (m, s) => s.name.length > m ? s.name.length : m);
         final approxName = (maxNameLen * 8.5).clamp(80.0, 500.0);
         final maxMajorLen =
-            students.fold<int>(0, (m, s) => s.major.length > m ? s.major.length : m);
+            s.fold<int>(0, (m, s) => s.major.length > m ? s.major.length : m);
         final approxMajor = (maxMajorLen * 8.5).clamp(80.0, 300.0);
         final maxShiftLen =
-            students.fold<int>(0, (m, s) => s.shift.length > m ? s.shift.length : m);
+            s.fold<int>(0, (m, s) => s.shift.length > m ? s.shift.length : m);
         final approxShift = (maxShiftLen * 8.5).clamp(50.0, 200.0);
         const approxDelete = 72.0;
         final tableWidth =
             approxId + approxName + approxMajor + approxShift + approxDelete + 32;
         final fill = vpw > tableWidth;
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: fill
-              ? SizedBox(
-                  width: vpw,
-                  child: _buildDataTable(context, fill),
-                )
-              : _buildDataTable(context, fill),
+        return Scrollbar(
+          controller: _controller,
+          thumbVisibility: true,
+          notificationPredicate: (notification) =>
+              notification.depth == 1 && notification.metrics.axis == Axis.horizontal,
+          child: Scrollbar(
+            controller: _verticalController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              controller: _verticalController,
+              child: _buildDataTable(context, fill, vpw),
+            ),
+          ),
         );
       },
     );
   }
 
-  Widget _buildDataTable(BuildContext context, bool fill) {
-    return SingleChildScrollView(
-      child: DataTable(
-        showCheckboxColumn: false,
-        horizontalMargin: 10,
-        headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
-        columnSpacing: 8,
-        columns: [
-          const DataColumn(
-            label: Text('Número de control'),
-            columnWidth: MaxColumnWidth(IntrinsicColumnWidth(), FixedColumnWidth(160)),
-          ),
-          DataColumn(
-            label: const Text('Nombre'),
-            columnWidth:
-                fill ? const IntrinsicColumnWidth(flex: 1) : const IntrinsicColumnWidth(),
-          ),
-          const DataColumn(
-            label: Text('Especialidad'),
-            columnWidth: IntrinsicColumnWidth(),
-          ),
-          const DataColumn(
-            label: Text('Turno'),
-            columnWidth: IntrinsicColumnWidth(),
-          ),
-          const DataColumn(
-            label: Text(''),
-            columnWidth: FixedColumnWidth(72),
-          ),
-        ],
-        rows: students.map((s) {
-          return DataRow(
-            onSelectChanged: (_) => onStudentTap(s.id),
-            cells: [
-              DataCell(Text(s.id.toString())),
-              DataCell(Text(s.name, overflow: TextOverflow.ellipsis)),
-              DataCell(Text(s.major, overflow: TextOverflow.ellipsis)),
-              DataCell(Text(s.shift, overflow: TextOverflow.ellipsis)),
-              DataCell(
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 20),
-                  color: SetansTheme.absent,
-                  onPressed: () => _confirmDelete(context, s),
-                  tooltip: 'Eliminar',
-                ),
+  Widget _buildDataTable(BuildContext context, bool fill, double vpw) {
+    final table = DataTable(
+      showCheckboxColumn: false,
+      horizontalMargin: 10,
+      headingRowColor: WidgetStateProperty.all(SetansTheme.surface),
+      columnSpacing: 8,
+      columns: [
+        const DataColumn(
+          label: Text('Número de control'),
+          columnWidth: MaxColumnWidth(IntrinsicColumnWidth(), FixedColumnWidth(160)),
+        ),
+        DataColumn(
+          label: const Text('Nombre'),
+          columnWidth:
+              fill ? const IntrinsicColumnWidth(flex: 1) : const IntrinsicColumnWidth(),
+        ),
+        const DataColumn(
+          label: Text('Especialidad'),
+          columnWidth: IntrinsicColumnWidth(),
+        ),
+        const DataColumn(
+          label: Text('Turno'),
+          columnWidth: IntrinsicColumnWidth(),
+        ),
+        const DataColumn(
+          label: Text(''),
+          columnWidth: FixedColumnWidth(72),
+        ),
+      ],
+      rows: widget.students.map((s) {
+        return DataRow(
+          onSelectChanged: (_) => widget.onStudentTap(s.id),
+          cells: [
+            DataCell(Text(s.id.toString())),
+            DataCell(Text(s.name, overflow: TextOverflow.ellipsis)),
+            DataCell(Text(s.major, overflow: TextOverflow.ellipsis)),
+            DataCell(Text(s.shift, overflow: TextOverflow.ellipsis)),
+            DataCell(
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20),
+                color: SetansTheme.absent,
+                onPressed: () => _confirmDelete(context, s),
+                tooltip: 'Eliminar',
               ),
-            ],
-          );
-        }).toList(),
-      ),
+            ),
+          ],
+        );
+      }).toList(),
+    );
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      controller: _controller,
+      child: fill
+          ? SizedBox(width: vpw, child: table)
+          : table,
     );
   }
 }

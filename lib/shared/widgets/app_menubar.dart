@@ -41,7 +41,7 @@ extension MenuItemX on MenuItem {
   }
 }
 
-class AppMenubar extends StatelessWidget {
+class AppMenubar extends StatefulWidget {
   final MenuItem selected;
   final ValueChanged<MenuItem> onItemSelected;
 
@@ -52,13 +52,28 @@ class AppMenubar extends StatelessWidget {
   });
 
   @override
+  State<AppMenubar> createState() => _AppMenubarState();
+}
+
+class _AppMenubarState extends State<AppMenubar> {
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       color: SetansTheme.primary,
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      child: Scrollbar(
+        controller: _controller,
+        thumbVisibility: true,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
+          controller: _controller,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
@@ -73,8 +88,8 @@ class AppMenubar extends StatelessWidget {
               const SizedBox(width: 32),
               ...MenuItem.values.map((item) => _MenuButton(
                     item: item,
-                    isSelected: selected == item,
-                    onTap: () => onItemSelected(item),
+                    isSelected: widget.selected == item,
+                    onTap: () => widget.onItemSelected(item),
                   )),
             ],
           ),
