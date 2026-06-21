@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:showcaseview/showcaseview.dart';
+import '../../../../theme/app_theme.dart';
 
 class TutorialStep {
   final GlobalKey targetKey;
@@ -147,8 +148,8 @@ class TutorialManager {
           type: TooltipDefaultActionType.previous,
           name: 'Anterior',
           backgroundColor: Colors.white,
-          textStyle: const TextStyle(color: Color(0xFF1565C0)),
-          border: Border.all(color: const Color(0xFF1565C0)),
+          textStyle: TextStyle(color: SetansTheme.primary),
+          border: Border.all(color: SetansTheme.primary),
           borderRadius: BorderRadius.circular(6),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           onTap: _handlePrevious,
@@ -164,7 +165,7 @@ class TutorialManager {
       TooltipActionButton(
         type: TooltipDefaultActionType.next,
         name: 'Siguiente',
-        backgroundColor: const Color(0xFF1565C0),
+        backgroundColor: SetansTheme.primary,
         textStyle: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
@@ -189,7 +190,7 @@ class TutorialManager {
       TooltipActionButton(
         type: TooltipDefaultActionType.next,
         name: 'Siguiente',
-        backgroundColor: const Color(0xFF1565C0),
+        backgroundColor: SetansTheme.primary,
         textStyle: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
@@ -309,16 +310,16 @@ class TutorialManager {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Icon(icon, size: 20, color: Color(0xFF1565C0)),
+                child: Icon(icon, size: 20, color: SetansTheme.primary),
               ),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1565C0),
+                    color: SetansTheme.primary,
                     height: 1.3,
                   ),
                 ),
