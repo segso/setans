@@ -19,6 +19,7 @@ dependencies:
   csv: ^8.0.0
   showcaseview: ^5.0.2
   file_picker: ^11.0.2
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
