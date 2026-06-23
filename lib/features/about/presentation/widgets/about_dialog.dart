@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../theme/app_theme.dart';
 
@@ -76,10 +77,10 @@ class AboutDialogWidget extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundColor: SetansTheme.primary,
-                    child: Icon(Icons.school, size: 32, color: Colors.white),
+                  SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: SvgPicture.asset('assets/setans.svg'),
                   ),
                   const SizedBox(height: 12),
                   Text(
