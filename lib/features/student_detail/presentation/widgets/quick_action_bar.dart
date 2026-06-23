@@ -73,6 +73,9 @@ class QuickActionBar extends ConsumerWidget {
         present: Value(present),
       ),
     );
+    ref.invalidate(studentAssistancesProvider(studentId));
+    ref.invalidate(totalDatesProvider);
+    ref.invalidate(allDatesProvider);
     ref.read(quickActionStatusProvider.notifier).setStatus(present);
   }
 }
