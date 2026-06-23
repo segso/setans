@@ -41,8 +41,8 @@ class RegisterScreen extends ConsumerWidget {
               const SizedBox(width: 12),
               ElevatedButton.icon(
                 onPressed: () => _openForm(context, ref),
-                icon: const Icon(Icons.add),
-                label: const Text('Nuevo'),
+                icon: const Icon(Icons.person_add),
+                label: const Text('Agregar estudiante'),
               ),
             ],
           ),

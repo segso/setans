@@ -81,7 +81,7 @@ class TutorialManager {
             '• Usa el campo de búsqueda para filtrar por número de control, '
             'nombre, especialidad o turno\n'
             '• Cliquea un estudiante para ver sus datos y asistencias\n'
-            '• Presiona "Nuevo" para agregar un estudiante\n'
+            '• Presiona "Agregar estudiante" para agregar un estudiante\n'
             '• Cliquea el ícono de eliminar para borrar un estudiante',
         navigation: TutorialNavigation.showRegister,
       ),
@@ -382,8 +382,8 @@ class TutorialManager {
               'nombre, especialidad o turno\n'
               '• Cliquea un estudiante para ver sus datos y asistencias\n'
               '• Presiona "'),
-          _iconSpan(Icons.add),
-          const TextSpan(text: ' Nuevo" para agregar un estudiante\n'
+          _iconSpan(Icons.person_add),
+          const TextSpan(text: ' Agregar estudiante" para agregar un estudiante\n'
               '• Cliquea '),
           _iconSpan(Icons.delete_outline, color: Color(0xFFC62828)),
           const TextSpan(text: ' para borrar un estudiante'),
