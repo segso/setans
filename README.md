@@ -1,7 +1,7 @@
 <div align="center">
     <h1>Setans</h1>
     <p>
-        <img src=".github/setans.svg" align="center" alt="Logo" width="256" />
+        <img src="assets/setans.svg" align="center" alt="Logo" width="256" />
     </p>
     <p>A desktop app for tracking student attendance.</p>
     <p>
