@@ -26,6 +26,12 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
   ScaffoldMessengerState? _scaffoldMessenger;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+  }
+
+  @override
   void initState() {
     super.initState();
     Future.microtask(() {
@@ -50,7 +56,7 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     overrideNotifier.setOverride(studentId, dateStr, newPresent);
 
     if (!context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
+    final messenger = _scaffoldMessenger ?? ScaffoldMessenger.of(context);
     _scaffoldMessenger = messenger;
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
@@ -80,8 +86,9 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
 
   @override
   void dispose() {
-    _timer?.cancel();
-    _scaffoldMessenger?.hideCurrentSnackBar();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scaffoldMessenger?.hideCurrentSnackBar();
+    });
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     super.dispose();
