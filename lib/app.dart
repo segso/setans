@@ -71,7 +71,7 @@ class _SetansAppState extends ConsumerState<SetansApp> {
         final students = await dao.getAll();
         if (students.isEmpty) {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
+          ScaffoldMessenger.of(_navigatorKey.currentContext!).showSnackBar(
             const SnackBar(
               content: Text(
                 'Registra al menos un estudiante para ver esta sección.',
