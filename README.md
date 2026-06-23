@@ -1,7 +1,7 @@
 <div align="center">
     <h1>Setans</h1>
     <p>
-        <img src=".github/screenshot.png" alt="Setans" />
+        <img src=".github/setans.svg" align="center" alt="Logo" width="256" />
     </p>
     <p>A desktop app for tracking student attendance.</p>
     <p>
@@ -12,6 +12,8 @@
 </div>
 
 ---
+
+![App Screenshot](.github/screenshot.png)
 
 ## 📋 What it does
 
