@@ -12,6 +12,7 @@ const _majors = [
   'Mecánica industrial',
   'Mecatrónica',
   'Programación',
+  'Soporte',
 ];
 
 const _shifts = ['Matutino', 'Vespertino'];

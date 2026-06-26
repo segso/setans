@@ -30,6 +30,7 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
     'Mecánica industrial',
     'Mecatrónica',
     'Programación',
+    'Soporte',
   ];
 
   static const _shifts = ['Matutino', 'Vespertino'];
