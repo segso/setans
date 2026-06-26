@@ -135,7 +135,8 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     );
   }
 
-  Future<void> _export(BuildContext context, OverviewData data) async {
+  Future<void> _export(BuildContext context, OverviewData _) async {
+    final data = await ref.read(overviewDataProvider.future);
     final overrides = ref.read(overviewOverrideProvider);
     final path = await data.saveCsv(overrides);
     if (path != null && context.mounted) {
