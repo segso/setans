@@ -98,7 +98,7 @@ class AboutDialogWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Versión 1.0.0+1',
+                    'Versión 1.0.1+2',
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
