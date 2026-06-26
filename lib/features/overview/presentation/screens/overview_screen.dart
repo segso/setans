@@ -136,7 +136,8 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
   }
 
   Future<void> _export(BuildContext context, OverviewData data) async {
-    final path = await data.saveCsv();
+    final overrides = ref.read(overviewOverrideProvider);
+    final path = await data.saveCsv(overrides);
     if (path != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('CSV guardado en: $path')),

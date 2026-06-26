@@ -18,7 +18,7 @@ class OverviewData {
     required this.data,
   });
 
-  String toCsv() {
+  String toCsv([Map<String, int> overrides = const {}]) {
     final sortedDates = dates.reversed.toList();
     final rows = <List<dynamic>>[
       ['Número de control', 'Nombre', 'Especialidad', 'Turno', ...sortedDates],
@@ -27,14 +27,17 @@ class OverviewData {
             s.name,
             s.major,
             s.shift,
-            ...sortedDates.map((d) => (data[s.id]?[d] ?? 0)),
+            ...sortedDates.map((d) {
+              final key = '${s.id}|$d';
+              return overrides.containsKey(key) ? overrides[key]! : (data[s.id]?[d] ?? 0);
+            }),
           ]),
     ];
     return const CsvEncoder(addBom: true).convert(rows);
   }
 
-  Future<String?> saveCsv() async {
-    final csv = toCsv();
+  Future<String?> saveCsv([Map<String, int> overrides = const {}]) async {
+    final csv = toCsv(overrides);
     final bytes = utf8.encode(csv);
 
     try {
