@@ -6,12 +6,25 @@ import 'student_form_screen.dart';
 import '../../../../shared/widgets/fuzzy_search_field.dart';
 import '../../../../shared/providers/shared_providers.dart';
 
-class RegisterScreen extends ConsumerWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   final void Function(int studentId)? onStudentTap;
 
   const RegisterScreen({super.key, this.onStudentTap});
 
-  Future<void> _openForm(BuildContext context, WidgetRef ref) async {
+  @override
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(studentSearchProvider.notifier).update('');
+    });
+  }
+
+  Future<void> _openForm(BuildContext context) async {
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => const StudentFormScreen()),
@@ -22,7 +35,7 @@ class RegisterScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final studentsAsync = ref.watch(filteredStudentsProvider);
 
     return Column(
@@ -40,7 +53,7 @@ class RegisterScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               ElevatedButton.icon(
-                onPressed: () => _openForm(context, ref),
+                onPressed: () => _openForm(context),
                 icon: const Icon(Icons.person_add),
                 label: const Text('Agregar estudiante'),
               ),
@@ -51,7 +64,7 @@ class RegisterScreen extends ConsumerWidget {
           child: studentsAsync.when(
             data: (students) => StudentTable(
               students: students,
-              onStudentTap: onStudentTap ?? (_) {},
+              onStudentTap: widget.onStudentTap ?? (_) {},
               onDeleteStudent: (id) async {
                 await ref.read(studentsDaoProvider).deleteStudent(id);
                 ref.read(mutationProvider.notifier).bump();
